@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(path = "/api/MedE")
@@ -128,9 +129,10 @@ public class MedEController {
     // STORE REGISTRATION
 
     @PostMapping(path = "Store/storeRegistration")
-    public ResponseEntity<?>storeRegistrationMethod(StoreRegistrationModel storeRegistrationModel){
+    public ResponseEntity<?>storeRegistrationMethod(@RequestPart StoreRegistrationModel storeRegistrationModel,
+                                                    @RequestPart MultipartFile licenseImage){
         try{
-            return medEService.storeRegistration(storeRegistrationModel);
+            return medEService.storeRegistration(storeRegistrationModel,licenseImage);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,5 +141,17 @@ public class MedEController {
     }
 
 
+    // STORE LOGIN
+
+    @PostMapping(path = "Store/storeLogin")
+    public ResponseEntity<?> StoreLoginMethod(@RequestParam String licenseNumber, @RequestParam String password){
+        try{
+            return medEService.storeLogin(licenseNumber,password);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 }

@@ -17,11 +17,15 @@ public class StoreRegistrationModel {
     @Column(name = "store_name")
     private String store_name;
 
-    @Column(name = "license_number")
-    private String license_number;
+    @Column(name = "licenseNumber")
+    private String licenseNumber;
 
-//    @Column(name = "license_image")
-//    private String license_image;
+    @Column(name = "phone_number")
+    private Integer phone_number;
+
+    @Lob
+    @Column(name = "license_image")
+    private byte[] license_image;
 
     @Column(name = "password")
     private String password;
@@ -55,20 +59,21 @@ public class StoreRegistrationModel {
         this.store_name = store_name;
     }
 
-    public String getLicense_number() {
-        return license_number;
+    public String getLicenseNumber() {
+        return licenseNumber;
     }
 
-    public void setLicense_number(String license_number) {
-        this.license_number = license_number;
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
     }
 
-//    public String getLicense_image() {
-//        return license_image;
-//    }
-//
-//    public void setLicense_image(String license_image) {
-//        this.license_image = license_image;
+    public byte[] getLicense_image() {
+        return license_image;
+    }
+
+    public void setLicense_image(byte[] license_image) {
+        this.license_image = license_image;
+    }
 
     public String getPassword() {
         return password;
@@ -76,6 +81,14 @@ public class StoreRegistrationModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Integer getPhone_number() {
+        return phone_number;
+    }
+
+    public void setPhone_number(Integer phone_number) {
+        this.phone_number = phone_number;
     }
 
     public Integer getStatus_id() {

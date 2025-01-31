@@ -13,10 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MedEService {
@@ -141,15 +142,20 @@ public class MedEService {
     @Autowired
     private StoreRegistrationRepo storeRegistrationRepo;
 
+
     // STORE REGISTRATION
 
-    public ResponseEntity<?> storeRegistration(StoreRegistrationModel storeRegistrationModel) {
+
+    public ResponseEntity<?> storeRegistration(StoreRegistrationModel storeRegistrationModel, MultipartFile licenseImage) throws IOException {
         StoreRegistrationModel storeRegistrationModel1 = new StoreRegistrationModel();
         storeRegistrationModel1.setStore_name(storeRegistrationModel.getStore_name());
-        storeRegistrationModel1.setLicense_number(storeRegistrationModel.getLicense_number());
-//        storeRegistrationModel1.setLicense_image(storeRegistrationModel.getLicense_image());
+        storeRegistrationModel1.setLicenseNumber(storeRegistrationModel.getLicenseNumber());
+        storeRegistrationModel1.setPhone_number(storeRegistrationModel.getPhone_number());
+
         storeRegistrationModel1.setPassword(storeRegistrationModel.getPassword());
         storeRegistrationModel1.setCreated_at(LocalDate.now());
+        // file upload(multipart)
+        storeRegistrationModel1.setLicense_image(licenseImage.getBytes());
 
         storeRegistrationRepo.save(storeRegistrationModel1);
         return new ResponseEntity<>(storeRegistrationModel1,HttpStatus.OK);
@@ -157,8 +163,15 @@ public class MedEService {
 
     }
 
+    // STORE LOGIN
 
 
-
-
+    public ResponseEntity<?> storeLogin(String licenseNumber, String password) {
+        Optional<StoreRegistrationModel>optionalStoreRegistrationModel=storeRegistrationRepo.findByLicenseNumberAndPassword(licenseNumber,password);
+        if (optionalStoreRegistrationModel.isPresent()){
+            return new ResponseEntity<>("Login Success",HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("License Number or password not match",HttpStatus.NOT_FOUND);
+        }
+    }
 }
