@@ -154,6 +154,7 @@ public class MedEService {
         storeRegistrationRepo.save(storeRegistrationModel1);
         return new ResponseEntity<>(storeRegistrationModel1,HttpStatus.OK);
 
+
     }
 
 
