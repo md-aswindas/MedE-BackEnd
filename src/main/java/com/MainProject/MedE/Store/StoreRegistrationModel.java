@@ -69,7 +69,8 @@ public class StoreRegistrationModel {
 //
 //    public void setLicense_image(String license_image) {
 //        this.license_image = license_image;
-//    }
+
+
 
     public String getPassword() {
         return password;
