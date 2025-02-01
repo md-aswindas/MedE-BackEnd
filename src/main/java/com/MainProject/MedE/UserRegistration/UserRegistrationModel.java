@@ -19,6 +19,9 @@ public class UserRegistrationModel {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "phoneNumber")
+    private Integer phoneNumber;
+
     @Column(name="password")
     private String password;
 
@@ -53,5 +56,13 @@ public class UserRegistrationModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Integer getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(Integer phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

@@ -2,6 +2,7 @@ package com.MainProject.MedE.ControllerService;
 
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Store.StatusModel;
+import com.MainProject.MedE.Store.StoreDTO;
 import com.MainProject.MedE.Store.StoreRegistrationModel;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/MedE")
@@ -53,9 +56,9 @@ public class MedEController {
     // UPDATE PASSWORD ( FORGOT PASSWORD )
 
     @PutMapping(path = "User/forgotPassword")
-    public ResponseEntity<?> forgotPasswordMethod(@RequestParam Integer user_id, @RequestParam String password){
+    public ResponseEntity<?> forgotPasswordMethod(@RequestParam String email, @RequestParam String password){
         try{
-        return medEService.forgotPassword(user_id,password);
+        return medEService.forgotPassword(email,password);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,9 +68,9 @@ public class MedEController {
     // UPDATE EMAIL
 
     @PutMapping(path = "User/updateEmail")
-    public ResponseEntity<?> updateEmailMethod(@RequestParam Integer user_id, @RequestParam String email){
+    public ResponseEntity<?> updateEmailMethod(@RequestParam Integer phoneNumber, @RequestParam String email){
         try{
-            return medEService.updateEmail(user_id,email);
+            return medEService.updateEmail(phoneNumber,email);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,12 +110,33 @@ public class MedEController {
         return new ResponseEntity<>("Something Went Wrong ",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // ADMIN VIEW STORES
+
+    @PostMapping(path = "Admin/adminViewStore")
+    public ResponseEntity<List<StoreDTO>>adminViewStoreMethod(){
+        return medEService.adminViewStores();
+    }
 
     // ADMIN (STORE STATUS UPDATE)
 
 
+    @PutMapping(path = "Admin/adminUpdateStoreStatus")
+    public ResponseEntity<?>updateStoreStatusMethod(@RequestParam Integer store_id,@RequestParam Integer status_id){
+        try{
+            return medEService.updateStoreStatus(store_id,status_id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Update Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
+
 
                             // STORE
+
+
+
 
     // STATUS TABLE ADD DATA
 

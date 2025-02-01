@@ -2,10 +2,7 @@ package com.MainProject.MedE.ControllerService;
 
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminRepo;
-import com.MainProject.MedE.Store.StatusModel;
-import com.MainProject.MedE.Store.StatusRepo;
-import com.MainProject.MedE.Store.StoreRegistrationModel;
-import com.MainProject.MedE.Store.StoreRegistrationRepo;
+import com.MainProject.MedE.Store.*;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import com.MainProject.MedE.UserRegistration.UserRegistrationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -55,8 +54,8 @@ public class MedEService {
 
     // UPDATE PASSWORD
 
-    public ResponseEntity<?> forgotPassword(Integer user_id, String password) {
-        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findById(user_id);
+    public ResponseEntity<?> forgotPassword(String email, String password) {
+        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findByEmail(email);
         if (optionalUserRegistrationModel.isPresent()){
             UserRegistrationModel userRegistrationModel = optionalUserRegistrationModel.get();
             userRegistrationModel.setPassword(password);
@@ -71,8 +70,8 @@ public class MedEService {
 
     //UPDATE EMAIL
 
-    public ResponseEntity<?> updateEmail(Integer user_id, String email) {
-        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findById(user_id);
+    public ResponseEntity<?> updateEmail(Integer phoneNumber, String email) {
+        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findByPhoneNumber(phoneNumber);
         if (optionalUserRegistrationModel.isPresent()){
             UserRegistrationModel userRegistrationModel = optionalUserRegistrationModel.get();
             userRegistrationModel.setEmail(email);
@@ -108,7 +107,7 @@ public class MedEService {
     }
 
 
-    //ADMIN LOGIN
+    // ADMIN LOGIN
 
     public ResponseEntity<?> adminLogin(String adminUserName, String password) {
         Optional<AdminModel>optionalAdminModel=adminRepo.findByAdminUserNameAndPassword(adminUserName,password);
@@ -118,6 +117,53 @@ public class MedEService {
             return new ResponseEntity<>("User name or password not match",HttpStatus.NOT_FOUND);
         }
     }
+
+    // ADMIN VIEW ALL STORES
+
+    public ResponseEntity<List<StoreDTO>> adminViewStores() {
+        List<StoreDTO> storeDTOList =new ArrayList<>();
+        List<StoreRegistrationModel> storeRegistrationModelList= storeRegistrationRepo.findAll();
+        if(!storeRegistrationModelList.isEmpty()){
+            for(StoreRegistrationModel urm : storeRegistrationModelList){
+
+                StoreDTO storeDTO = new StoreDTO();
+                storeDTO.setStoreId(urm.getStore_id());
+                storeDTO.setStoreName(urm.getStore_name());
+                storeDTO.setLicenseNumber(urm.getLicenseNumber());
+                storeDTO.setStatusId(urm.getStatus_id());
+                storeDTO.setRegistrationDate(urm.getCreated_at());
+                storeDTO.setStatusUpdateDate(urm.getStatusUpdate_at());
+
+                Optional<StatusModel> statusModelOptional=statusRepo.findById(urm.getStatus_id());
+                if(statusModelOptional.isPresent()){
+                    StatusModel statusModel = statusModelOptional.get();
+                    storeDTO.setStatusName(statusModel.getStatus_name());
+                }
+                storeDTOList.add(storeDTO);
+
+            }
+            return new ResponseEntity<>(storeDTOList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(storeDTOList,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    //ADMIN UPDATE STORE STATUS
+
+
+    public ResponseEntity<?> updateStoreStatus(Integer store_id, Integer status_id) {
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(store_id);
+        if (storeRegistrationModelOptional.isPresent()){
+            StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
+            storeRegistrationModel.setStatus_id(status_id);
+            storeRegistrationRepo.save(storeRegistrationModel);
+            return new ResponseEntity<>(storeRegistrationModel,HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+        }
+
+    }
+
 
 
 
@@ -174,4 +220,7 @@ public class MedEService {
             return new ResponseEntity<>("License Number or password not match",HttpStatus.NOT_FOUND);
         }
     }
+
+
+
 }
