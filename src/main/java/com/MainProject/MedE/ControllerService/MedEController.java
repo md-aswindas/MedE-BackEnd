@@ -1,6 +1,7 @@
 package com.MainProject.MedE.ControllerService;
 
 import com.MainProject.MedE.Admin.AdminModel;
+import com.MainProject.MedE.Store.ProductModel;
 import com.MainProject.MedE.Store.StatusModel;
 import com.MainProject.MedE.Store.StoreDTO;
 import com.MainProject.MedE.Store.StoreRegistrationModel;
@@ -85,7 +86,7 @@ public class MedEController {
 
 
 
-    // ADMIN REGISTREATION
+    // ADMIN REGISTRATION
 
     @PostMapping(path = "Admin/adminRegistration")
     public ResponseEntity<?>adminRegistrationMethod(@RequestBody AdminModel adminModel){
@@ -176,6 +177,48 @@ public class MedEController {
             e.printStackTrace();
         }
         return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE PRODUCT ADDING
+
+    @PostMapping(path = "Store/addProduct")
+    public ResponseEntity<?>addProductMethod(@RequestPart ProductModel productModel,
+                                                    @RequestPart MultipartFile productImage){
+        try{
+            return medEService.addProduct(productModel,productImage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Product Add Failed",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE UPDATE PRODUCT( STOCK , ACTUAL PRICE , OFFER PERCENTAGE )
+
+    @PostMapping(path = "Store/updateProduct")
+    public ResponseEntity<?>updateProductMethod(@RequestParam Integer productId,
+                                          @RequestParam Integer stock,
+                                          @RequestParam double actualPrice,
+                                          @RequestParam Integer offerPercentage){
+        try{
+            return medEService.productUpdate(productId,stock,actualPrice,offerPercentage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Update Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE VIEW ALL PRODUCTS
+
+    @GetMapping(path = "Store/StoreViewAllProducts")
+    public ResponseEntity<?>storeViewAllProductsMethod(@RequestParam Integer storeId){
+        try{
+            return medEService.storeViewAllProduct(storeId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

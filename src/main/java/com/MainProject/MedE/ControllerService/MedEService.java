@@ -221,6 +221,52 @@ public class MedEService {
         }
     }
 
+    // STORE ADD PRODUCT
+
+    @Autowired
+    private ProductRepo productRepo;
 
 
+    public ResponseEntity<?> addProduct(ProductModel productModel, MultipartFile productImage) throws IOException {
+        ProductModel productModel1 = new ProductModel();
+
+        productModel1.setStoreId(productModel.getStoreId());
+        productModel1.setProductName(productModel.getProductName());
+        productModel1.setProductDesc(productModel.getProductDesc());
+        productModel1.setProductImage(productImage.getBytes());
+
+        productModel1.setStock(productModel.getStock());
+        productModel1.setActualPrice(productModel.getActualPrice());
+        productModel1.setOfferPercentage(productModel.getOfferPercentage());
+        productModel1.calculateDiscountPrice();
+
+        productRepo.save(productModel1);
+
+        return new ResponseEntity<>(productModel1,HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> productUpdate(Integer productId, Integer stock, double actualPrice, Integer offerPercentage) {
+
+        Optional<ProductModel>productModelOptional=productRepo.findById(productId);
+        if (productModelOptional.isPresent()){
+            ProductModel productModel = productModelOptional.get();
+            productModel.setStock(stock);
+            productModel.setActualPrice(actualPrice);
+            productModel.setOfferPercentage(offerPercentage);
+            productModel.calculateDiscountPrice();
+            productRepo.save(productModel);
+            return new ResponseEntity<>(productModel,HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+        }
+
+    }
+
+    public ResponseEntity<?> storeViewAllProduct(Integer storeId) {
+        List<ProductModel> productModelList=productRepo.findAllByStoreId(storeId);
+        if (!productModelList.isEmpty()){
+            return new ResponseEntity<>(productModelList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+    }
 }
