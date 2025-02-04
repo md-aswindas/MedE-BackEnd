@@ -132,6 +132,21 @@ public class MedEController {
 
     }
 
+    // ADMIN (VIEW PRODUCTS OF SINGLE STORE)
+
+
+    @GetMapping(path = "Admin/AdminViewStoreProducts")
+    public ResponseEntity<?>adminViewStoreProductsMethod(@RequestParam Integer storeId){
+        try{
+            return medEService.adminViewStoreProduct(storeId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+
 
 
                             // STORE

@@ -164,6 +164,18 @@ public class MedEService {
 
     }
 
+    // ADMIN (VIEW PRODUCTS OF SINGLE STORE)
+
+    public ResponseEntity<?> adminViewStoreProduct(Integer storeId) {
+        List<ProductModel> productModelList=productRepo.findAllByStoreId(storeId);
+        if (!productModelList.isEmpty()){
+            return new ResponseEntity<>(productModelList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+    }
+
+    // ADMIN VIEW ALL PRODUCTS WITH STORE NAME
+
 
 
 
@@ -269,4 +281,6 @@ public class MedEService {
         }
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
+
+
 }
