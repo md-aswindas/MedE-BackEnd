@@ -210,7 +210,7 @@ public class MedEController {
 
     // STORE UPDATE PRODUCT( STOCK , ACTUAL PRICE , OFFER PERCENTAGE )
 
-    @PostMapping(path = "Store/updateProduct")
+    @PutMapping(path = "Store/updateProduct")
     public ResponseEntity<?>updateProductMethod(@RequestParam Integer productId,
                                           @RequestParam Integer stock,
                                           @RequestParam double actualPrice,
