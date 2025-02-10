@@ -2,7 +2,10 @@ package com.MainProject.MedE.ControllerService;
 
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminRepo;
+import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.*;
+import com.MainProject.MedE.UserRegistration.PrescriptionModel;
+import com.MainProject.MedE.UserRegistration.PrescriptionRepo;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import com.MainProject.MedE.UserRegistration.UserRegistrationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +84,20 @@ public class MedEService {
         } else{
             return new ResponseEntity<>("User id not Found",HttpStatus.NOT_FOUND);
         }
+    }
+
+    // UPLOAD PRESCRIPTION
+
+    @Autowired
+    private PrescriptionRepo prescriptionRepo;
+
+    public ResponseEntity<?> uploadPrescription(PrescriptionModel prescriptionModel, MultipartFile prescriptionImage) throws IOException {
+        PrescriptionModel prescriptionModel1 = new PrescriptionModel();
+        prescriptionModel1.setUser_id(prescriptionModel.getUser_id());
+        prescriptionModel1.setPrescriptionImage(prescriptionImage.getBytes());
+
+        prescriptionRepo.save(prescriptionModel1);
+        return new ResponseEntity<>(prescriptionModel1,HttpStatus.OK);
     }
 
 
@@ -176,6 +193,32 @@ public class MedEService {
 
     // ADMIN VIEW ALL PRODUCTS WITH STORE NAME
 
+    public ResponseEntity<List<AdminViewProductDTO>> adminViewProductsWithName() {
+        List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
+        List<ProductModel> productModelList = productRepo.findAll();
+        if(!productModelList.isEmpty()){
+            for (ProductModel pdm : productModelList){
+                AdminViewProductDTO adminViewProductDTO = new AdminViewProductDTO();
+                adminViewProductDTO.setStoreId(pdm.getStoreId());
+                adminViewProductDTO.setProductId(pdm.getProductId());
+                adminViewProductDTO.setProductName(pdm.getProductName());
+                adminViewProductDTO.setActualPrice(pdm.getActualPrice());
+                adminViewProductDTO.setOfferPercentage(pdm.getOfferPercentage());
+                adminViewProductDTO.setFinalDiscountPrice(pdm.getDiscountPrice());
+                adminViewProductDTO.setStockCount(pdm.getStock());
+
+                Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
+
+                if(storeRegistrationModelOptional.isPresent()){
+                    StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
+                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStore_name());
+                }
+                adminViewProductDTOList.add(adminViewProductDTO);
+            }
+            return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.NOT_FOUND);
+    }
 
 
 
@@ -257,6 +300,8 @@ public class MedEService {
         return new ResponseEntity<>(productModel1,HttpStatus.OK);
     }
 
+    // STORE PRODUCT UPDATE
+
     public ResponseEntity<?> productUpdate(Integer productId, Integer stock, double actualPrice, Integer offerPercentage) {
 
         Optional<ProductModel>productModelOptional=productRepo.findById(productId);
@@ -274,6 +319,8 @@ public class MedEService {
 
     }
 
+    // STORE VIEW ALL PRODUCTS
+
     public ResponseEntity<?> storeViewAllProduct(Integer storeId) {
         List<ProductModel> productModelList=productRepo.findAllByStoreId(storeId);
         if (!productModelList.isEmpty()){
@@ -281,6 +328,7 @@ public class MedEService {
         }
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
+
 
 
 }

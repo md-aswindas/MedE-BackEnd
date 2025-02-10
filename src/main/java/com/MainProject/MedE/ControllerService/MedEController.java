@@ -1,10 +1,13 @@
 package com.MainProject.MedE.ControllerService;
 
 import com.MainProject.MedE.Admin.AdminModel;
+import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.ProductModel;
 import com.MainProject.MedE.Store.StatusModel;
 import com.MainProject.MedE.Store.StoreDTO;
+
 import com.MainProject.MedE.Store.StoreRegistrationModel;
+import com.MainProject.MedE.UserRegistration.PrescriptionModel;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -66,7 +69,7 @@ public class MedEController {
         return new ResponseEntity<>("Something went Wrong !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // UPDATE EMAIL
+    // UPDATE EMAIL **MODIFY TO DISPLAY EMAIL**
 
     @PutMapping(path = "User/updateEmail")
     public ResponseEntity<?> updateEmailMethod(@RequestParam Integer phoneNumber, @RequestParam String email){
@@ -77,6 +80,19 @@ public class MedEController {
         }
         return new ResponseEntity<>("Something went Wrong !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // USER UPLOAD PRESCRIPTION
+
+    @PostMapping(path = "User/uploadPrescription")
+    public ResponseEntity<?> uploadPrescriptionMethod(@RequestPart PrescriptionModel prescriptionModel, @RequestPart MultipartFile prescriptionImage){
+        try{
+            return medEService.uploadPrescription(prescriptionModel,prescriptionImage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("upload failed",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
 
 
@@ -145,8 +161,12 @@ public class MedEController {
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // ADMIN ( VIEW PRODUCTS OF ALL STORES WITH STORE NAME )
 
-
+    @PostMapping(path = "Admin/adminViewAllProduct")
+    public ResponseEntity<List<AdminViewProductDTO>>adminViewProductDTOMethod(){
+        return medEService.adminViewProductsWithName();
+    }
 
 
                             // STORE
