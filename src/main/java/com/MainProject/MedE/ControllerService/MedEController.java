@@ -234,9 +234,9 @@ public class MedEController {
     public ResponseEntity<?>updateProductMethod(@RequestParam Integer productId,
                                           @RequestParam Integer stock,
                                           @RequestParam double actualPrice,
-                                          @RequestParam Integer offerPercentage){
+                                          @RequestParam Integer offerPercentage,@RequestParam Integer store_id){
         try{
-            return medEService.productUpdate(productId,stock,actualPrice,offerPercentage);
+            return medEService.productUpdate(productId,stock,actualPrice,offerPercentage,store_id);
 
         } catch (Exception e) {
             e.printStackTrace();

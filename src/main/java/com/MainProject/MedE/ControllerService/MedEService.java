@@ -86,18 +86,22 @@ public class MedEService {
         }
     }
 
-    // UPLOAD PRESCRIPTION
+    // UPLOAD PRESCRIPTION  *** check store id if exist ***
 
     @Autowired
     private PrescriptionRepo prescriptionRepo;
 
     public ResponseEntity<?> uploadPrescription(PrescriptionModel prescriptionModel, MultipartFile prescriptionImage) throws IOException {
-        PrescriptionModel prescriptionModel1 = new PrescriptionModel();
-        prescriptionModel1.setUser_id(prescriptionModel.getUser_id());
-        prescriptionModel1.setPrescriptionImage(prescriptionImage.getBytes());
+        Optional<UserRegistrationModel>userRegistrationModelOptional=userRegistrationRepo.findById(prescriptionModel.getUser_id());
+        if(userRegistrationModelOptional.isPresent()) {
+            PrescriptionModel prescriptionModel1 = new PrescriptionModel();
+            prescriptionModel1.setUser_id(prescriptionModel.getUser_id());
+            prescriptionModel1.setPrescriptionImage(prescriptionImage.getBytes());
 
-        prescriptionRepo.save(prescriptionModel1);
-        return new ResponseEntity<>(prescriptionModel1,HttpStatus.OK);
+            prescriptionRepo.save(prescriptionModel1);
+            return new ResponseEntity<>(prescriptionModel1, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
     }
 
 
@@ -276,46 +280,55 @@ public class MedEService {
         }
     }
 
-    // STORE ADD PRODUCT
+    // STORE ADD PRODUCT *** check store id if exist & add exp date***
 
     @Autowired
     private ProductRepo productRepo;
 
 
     public ResponseEntity<?> addProduct(ProductModel productModel, MultipartFile productImage) throws IOException {
-        ProductModel productModel1 = new ProductModel();
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(productModel.getStoreId());
+        if(storeRegistrationModelOptional.isPresent()) {
 
-        productModel1.setStoreId(productModel.getStoreId());
-        productModel1.setProductName(productModel.getProductName());
-        productModel1.setProductDesc(productModel.getProductDesc());
-        productModel1.setProductImage(productImage.getBytes());
+            ProductModel productModel1 = new ProductModel();
 
-        productModel1.setStock(productModel.getStock());
-        productModel1.setActualPrice(productModel.getActualPrice());
-        productModel1.setOfferPercentage(productModel.getOfferPercentage());
-        productModel1.calculateDiscountPrice();
+            productModel1.setStoreId(productModel.getStoreId());
+            productModel1.setProductName(productModel.getProductName());
+            productModel1.setProductDesc(productModel.getProductDesc());
+            productModel1.setProductImage(productImage.getBytes());
 
-        productRepo.save(productModel1);
+            productModel1.setStock(productModel.getStock());
+            productModel1.setActualPrice(productModel.getActualPrice());
+            productModel1.setOfferPercentage(productModel.getOfferPercentage());
+            productModel1.calculateDiscountPrice();
 
-        return new ResponseEntity<>(productModel1,HttpStatus.OK);
+            productRepo.save(productModel1);
+
+            return new ResponseEntity<>(productModel1, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id not found",HttpStatus.NOT_FOUND);
     }
 
-    // STORE PRODUCT UPDATE
+    // STORE PRODUCT UPDATE *** check storeid if exist ***
 
-    public ResponseEntity<?> productUpdate(Integer productId, Integer stock, double actualPrice, Integer offerPercentage) {
+    public ResponseEntity<?> productUpdate(Integer productId, Integer stock, double actualPrice, Integer offerPercentage, Integer store_id) {
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(store_id);
+        if(storeRegistrationModelOptional.isPresent()){
 
-        Optional<ProductModel>productModelOptional=productRepo.findById(productId);
-        if (productModelOptional.isPresent()){
-            ProductModel productModel = productModelOptional.get();
-            productModel.setStock(stock);
-            productModel.setActualPrice(actualPrice);
-            productModel.setOfferPercentage(offerPercentage);
-            productModel.calculateDiscountPrice();
-            productRepo.save(productModel);
-            return new ResponseEntity<>(productModel,HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+            Optional<ProductModel>productModelOptional=productRepo.findById(productId);
+            if (productModelOptional.isPresent()){
+                ProductModel productModel = productModelOptional.get();
+                productModel.setStock(stock);
+                productModel.setActualPrice(actualPrice);
+                productModel.setOfferPercentage(offerPercentage);
+                productModel.calculateDiscountPrice();
+                productRepo.save(productModel);
+                return new ResponseEntity<>(productModel,HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(" ProductId Not Found",HttpStatus.NOT_FOUND);
+            }
         }
+        return new ResponseEntity<>("store Id not found",HttpStatus.NOT_FOUND);
 
     }
 
