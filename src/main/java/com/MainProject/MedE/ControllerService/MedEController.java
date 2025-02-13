@@ -1,5 +1,6 @@
 package com.MainProject.MedE.ControllerService;
 
+import com.MainProject.MedE.Admin.AdminLoginDto;
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.ProductModel;
@@ -8,6 +9,7 @@ import com.MainProject.MedE.Store.StoreDTO;
 
 import com.MainProject.MedE.Store.StoreRegistrationModel;
 import com.MainProject.MedE.UserRegistration.PrescriptionModel;
+import com.MainProject.MedE.UserRegistration.UserLoginDto;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping(path = "/api/MedE")
 public class MedEController {
@@ -46,15 +49,24 @@ public class MedEController {
 
     // USER LOGIN
 
-    @PostMapping(path = "User/userLogin")
-    public ResponseEntity<?> userLoginMethod(@RequestParam String email, @RequestParam String password){
-        try{
-            return medEService.userLogin(email,password);
+                        //    @PostMapping(path = "User/userLogin")
+                        //    public ResponseEntity<?> userLoginMethod(@RequestParam String email, @RequestParam String password){
+                        //        try{
+                        //            return medEService.userLogin(email,password);
+                        //
+                        //        } catch (Exception e) {
+                        //            e.printStackTrace();
+                        //        }
+                        //        return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+                        //    }
+                        //
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+
+    @PostMapping(path = "User/userLogin")
+    public ResponseEntity<?>userLoginMethod(@RequestBody  UserLoginDto userLoginDto){
+
+            return medEService.userLogin(userLoginDto);
+
     }
 
     // UPDATE PASSWORD ( FORGOT PASSWORD )
@@ -117,14 +129,21 @@ public class MedEController {
 
     // ADMIN LOGIN
 
+                                        //    @PostMapping(path = "Admin/adminLogin")
+                                        //    public ResponseEntity<?>adminLoginMethod(@RequestParam String adminUserName,@RequestParam String password){
+                                        //        try{
+                                        //            return medEService.adminLogin(adminUserName,password);
+                                        //        } catch (Exception e) {
+                                        //            e.printStackTrace();
+                                        //        }
+                                        //        return new ResponseEntity<>("Something Went Wrong ",HttpStatus.INTERNAL_SERVER_ERROR);
+                                        //    }
+
     @PostMapping(path = "Admin/adminLogin")
-    public ResponseEntity<?>adminLoginMethod(@RequestParam String adminUserName,@RequestParam String password){
-        try{
-            return medEService.adminLogin(adminUserName,password);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>("Something Went Wrong ",HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?>adminLoginMethod(@RequestBody AdminLoginDto adminLoginDto){
+
+        return medEService.adminLogin(adminLoginDto);
+
     }
 
     // ADMIN VIEW STORES
@@ -228,7 +247,7 @@ public class MedEController {
         return new ResponseEntity<>("Product Add Failed",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // STORE UPDATE PRODUCT( STOCK , ACTUAL PRICE , OFFER PERCENTAGE )
+    // STORE UPDATE PRODUCT( STOCK , ACTUAL PRICE , OFFER PERCENTAGE ) ***create dto class and use @RequestBody***
 
     @PutMapping(path = "Store/updateProduct")
     public ResponseEntity<?>updateProductMethod(@RequestParam Integer productId,

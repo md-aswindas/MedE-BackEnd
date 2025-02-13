@@ -2,7 +2,9 @@ package com.MainProject.MedE.Store;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+@CrossOrigin
 @Data
 @Entity
 @Table(name = "status_table")

@@ -2,7 +2,11 @@ package com.MainProject.MedE.Store;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.time.LocalDate;
+
+@CrossOrigin
 @Data
 @Entity
 @Table(name = "product_table")
@@ -32,6 +36,12 @@ public class ProductModel {
 
     @Column(name = "discountPrice")
     private double discountPrice;
+
+    @Column(name = "expiryDate")
+    private LocalDate expiryDate;
+
+    @Column(name = "categoryId")
+    private Integer categoryId;
 
     @Lob
     @Column(name = "productImage")
@@ -114,5 +124,21 @@ public class ProductModel {
 
     public void setProductImage(byte[] productImage) {
         this.productImage = productImage;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
     }
 }

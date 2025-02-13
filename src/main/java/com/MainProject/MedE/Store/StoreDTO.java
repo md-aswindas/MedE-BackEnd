@@ -2,9 +2,11 @@ package com.MainProject.MedE.Store;
 
 
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDate;
 
+@CrossOrigin
 @Data
 public class StoreDTO {
 

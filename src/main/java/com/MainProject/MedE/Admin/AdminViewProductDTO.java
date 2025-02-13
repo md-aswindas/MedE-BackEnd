@@ -1,8 +1,10 @@
 package com.MainProject.MedE.Admin;
 
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
+@CrossOrigin
 public class AdminViewProductDTO {
 
     private Integer storeId;

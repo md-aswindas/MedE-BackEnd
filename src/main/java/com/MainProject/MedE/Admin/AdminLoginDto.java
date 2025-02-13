@@ -1,32 +1,14 @@
 package com.MainProject.MedE.Admin;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-@Data
-@Entity
-@Table(name = "admin_table")
 @CrossOrigin
-public class AdminModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "admin_id")
-    private Integer admin_id;
+@Data
+public class AdminLoginDto {
 
-    @Column(name = "adminUserName")
     private String adminUserName;
-
-    @Column(name = "password")
     private String password;
-
-    public Integer getAdmin_id() {
-        return admin_id;
-    }
-
-    public void setAdmin_id(Integer admin_id) {
-        this.admin_id = admin_id;
-    }
 
     public String getAdminUserName() {
         return adminUserName;

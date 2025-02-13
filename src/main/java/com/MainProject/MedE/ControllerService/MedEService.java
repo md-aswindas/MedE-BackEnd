@@ -1,13 +1,11 @@
 package com.MainProject.MedE.ControllerService;
 
+import com.MainProject.MedE.Admin.AdminLoginDto;
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminRepo;
 import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.*;
-import com.MainProject.MedE.UserRegistration.PrescriptionModel;
-import com.MainProject.MedE.UserRegistration.PrescriptionRepo;
-import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
-import com.MainProject.MedE.UserRegistration.UserRegistrationRepo;
+import com.MainProject.MedE.UserRegistration.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 
+@CrossOrigin
 @Service
 public class MedEService {
     @Autowired
@@ -45,14 +45,22 @@ public class MedEService {
 
     // USER LOGIN
 
-    public ResponseEntity<?> userLogin(String email, String password) {
-        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findByEmailAndPassword(email,password);
-        if (optionalUserRegistrationModel.isPresent()){
-            return new ResponseEntity<>("Login Success",HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("Not found ",HttpStatus.NOT_FOUND);
-        }
+                        //    public ResponseEntity<?> userLogin(String email, String password) {
+                        //        Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findByEmailAndPassword(email,password);
+                        //        if (optionalUserRegistrationModel.isPresent()){
+                        //            return new ResponseEntity<>("Login Success",HttpStatus.OK);
+                        //        }else{
+                        //            return new ResponseEntity<>("Not found ",HttpStatus.NOT_FOUND);
+                        //        }
+                        //
+                        //    }
 
+    public ResponseEntity<?> userLogin(UserLoginDto userLoginDto) {
+        Optional<UserRegistrationModel>userRegistrationModelOptional=userRegistrationRepo.findByEmailAndPassword(userLoginDto.getEmail(), userLoginDto.getPassword());
+        if(userRegistrationModelOptional.isPresent()){
+            return new ResponseEntity<>("login success",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("email and password not match",HttpStatus.NOT_FOUND);
     }
 
     // UPDATE PASSWORD
@@ -130,13 +138,21 @@ public class MedEService {
 
     // ADMIN LOGIN
 
-    public ResponseEntity<?> adminLogin(String adminUserName, String password) {
-        Optional<AdminModel>optionalAdminModel=adminRepo.findByAdminUserNameAndPassword(adminUserName,password);
-        if (optionalAdminModel.isPresent()){
-            return new ResponseEntity<>("Login Success",HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("User name or password not match",HttpStatus.NOT_FOUND);
+                            //    public ResponseEntity<?> adminLogin(String adminUserName, String password) {
+                            //        Optional<AdminModel>optionalAdminModel=adminRepo.findByAdminUserNameAndPassword(adminUserName,password);
+                            //        if (optionalAdminModel.isPresent()){
+                            //            return new ResponseEntity<>("Login Success",HttpStatus.OK);
+                            //        }else{
+                            //            return new ResponseEntity<>("User name or password not match",HttpStatus.NOT_FOUND);
+                            //        }
+                            //    }
+
+    public ResponseEntity<?> adminLogin(AdminLoginDto adminLoginDto) {
+        Optional<AdminModel>optionalAdminModel=adminRepo.findByAdminUserNameAndPassword(adminLoginDto.getAdminUserName(), adminLoginDto.getPassword());
+        if (optionalAdminModel.isPresent()) {
+            return new ResponseEntity<>("Login Success", HttpStatus.OK);
         }
+        return new ResponseEntity<>("username and password not match",HttpStatus.NOT_FOUND);
     }
 
     // ADMIN VIEW ALL STORES
@@ -297,6 +313,8 @@ public class MedEService {
             productModel1.setProductDesc(productModel.getProductDesc());
             productModel1.setProductImage(productImage.getBytes());
 
+            productModel1.setCategoryId(productModel.getCategoryId());
+            productModel1.setExpiryDate(productModel.getExpiryDate());
             productModel1.setStock(productModel.getStock());
             productModel1.setActualPrice(productModel.getActualPrice());
             productModel1.setOfferPercentage(productModel.getOfferPercentage());

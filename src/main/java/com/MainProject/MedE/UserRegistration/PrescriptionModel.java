@@ -2,7 +2,9 @@ package com.MainProject.MedE.UserRegistration;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+@CrossOrigin
 @Entity
 @Data
 @Table(name = "prescriptionTable")

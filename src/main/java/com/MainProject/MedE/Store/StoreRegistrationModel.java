@@ -2,9 +2,11 @@ package com.MainProject.MedE.Store;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDate;
 
+@CrossOrigin
 @Data
 @Entity
 @Table(name = "store_registration_table")
