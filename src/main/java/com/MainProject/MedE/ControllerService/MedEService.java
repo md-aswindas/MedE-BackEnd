@@ -37,7 +37,7 @@ public class MedEService {
         userRegistrationModel1.setName(userRegistrationModel.getName());
         userRegistrationModel1.setPassword(userRegistrationModel.getPassword());
         userRegistrationModel1.setEmail(userRegistrationModel.getEmail());
-
+        userRegistrationModel1.setPhoneNumber(userRegistrationModel.getPhoneNumber());
         userRegistrationRepo.save(userRegistrationModel1);
 
         return new ResponseEntity<>(userRegistrationModel1, HttpStatus.OK);
@@ -287,14 +287,25 @@ public class MedEService {
     // STORE LOGIN
 
 
-    public ResponseEntity<?> storeLogin(String licenseNumber, String password) {
-        Optional<StoreRegistrationModel>optionalStoreRegistrationModel=storeRegistrationRepo.findByLicenseNumberAndPassword(licenseNumber,password);
-        if (optionalStoreRegistrationModel.isPresent()){
-            return new ResponseEntity<>("Login Success",HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("License Number or password not match",HttpStatus.NOT_FOUND);
+//    public ResponseEntity<?> storeLogin(String licenseNumber, String password) {
+//        Optional<StoreRegistrationModel>optionalStoreRegistrationModel=storeRegistrationRepo.findByLicenseNumberAndPassword(licenseNumber,password);
+//        if (optionalStoreRegistrationModel.isPresent()){
+//            return new ResponseEntity<>("Login Success",HttpStatus.OK);
+//        }else{
+//            return new ResponseEntity<>("License Number or password not match",HttpStatus.NOT_FOUND);
+//        }
+//    }
+
+
+    public ResponseEntity<?> storeLogin(StoreLoginDto storeLoginDto) {
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findByLicenseNumberAndPassword(storeLoginDto.getLicenseNumber(),storeLoginDto.getPassword());
+        if(storeRegistrationModelOptional.isPresent()){
+            return new ResponseEntity<>("login success",HttpStatus.OK);
         }
+        return new ResponseEntity<>("licnseNumber and password not match",HttpStatus.NOT_FOUND);
     }
+
+
 
     // STORE ADD PRODUCT *** check store id if exist & add exp date***
 

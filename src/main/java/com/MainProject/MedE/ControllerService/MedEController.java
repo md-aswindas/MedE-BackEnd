@@ -3,11 +3,8 @@ package com.MainProject.MedE.ControllerService;
 import com.MainProject.MedE.Admin.AdminLoginDto;
 import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminViewProductDTO;
-import com.MainProject.MedE.Store.ProductModel;
-import com.MainProject.MedE.Store.StatusModel;
-import com.MainProject.MedE.Store.StoreDTO;
+import com.MainProject.MedE.Store.*;
 
-import com.MainProject.MedE.Store.StoreRegistrationModel;
 import com.MainProject.MedE.UserRegistration.PrescriptionModel;
 import com.MainProject.MedE.UserRegistration.UserLoginDto;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
@@ -222,15 +219,22 @@ public class MedEController {
 
     // STORE LOGIN
 
-    @PostMapping(path = "Store/storeLogin")
-    public ResponseEntity<?> StoreLoginMethod(@RequestParam String licenseNumber, @RequestParam String password){
-        try{
-            return medEService.storeLogin(licenseNumber,password);
+//    @PostMapping(path = "Store/storeLogin")
+//    public ResponseEntity<?> StoreLoginMethod(@RequestParam String licenseNumber, @RequestParam String password){
+//        try{
+//            return medEService.storeLogin(licenseNumber,password);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>("Login Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    @PostMapping(path = "Store/storeLogin")
+    public ResponseEntity<?>storeLoginMethod(@RequestBody StoreLoginDto storeLoginDto){
+
+        return medEService.storeLogin(storeLoginDto);
+
     }
 
     // STORE PRODUCT ADDING
