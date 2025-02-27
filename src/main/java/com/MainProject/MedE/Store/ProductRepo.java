@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ProductRepo extends JpaRepository<ProductModel,Integer> {
 
     List<ProductModel> findAllByStoreId(Integer storeId);
+
+    List<ProductModel> findByProductNameContainingIgnoreCase(String productName);
 }

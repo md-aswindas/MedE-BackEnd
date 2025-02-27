@@ -112,6 +112,14 @@ public class MedEService {
         return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
     }
 
+    // SEARCH PRODUCT
+
+    public ResponseEntity<?> searchProduct(String productName) {
+        List<ProductModel> products = productRepo.findByProductNameContainingIgnoreCase(productName);
+        if (products.isEmpty()){
+            return new ResponseEntity<>("not found ",HttpStatus.NOT_FOUND);
+        }return new ResponseEntity<>("item found",HttpStatus.FOUND);
+    }
 
 
 

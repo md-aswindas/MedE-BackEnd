@@ -103,7 +103,12 @@ public class MedEController {
     }
 
 
+    // USER SEARCH PRODUCT
 
+    @GetMapping(path = "User/searchProduct")
+   public ResponseEntity<?> searchProduct(@RequestParam String productName){
+        return medEService.searchProduct(productName);
+    }
 
 
 
