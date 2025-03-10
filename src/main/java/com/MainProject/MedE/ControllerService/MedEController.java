@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @RestController
@@ -184,9 +185,21 @@ public class MedEController {
 
     // ADMIN ( VIEW PRODUCTS OF ALL STORES WITH STORE NAME )
 
-    @PostMapping(path = "Admin/adminViewAllProduct")
+    @GetMapping(path = "Admin/adminViewAllProduct")
     public ResponseEntity<List<AdminViewProductDTO>>adminViewProductDTOMethod(){
         return medEService.adminViewProductsWithName();
+    }
+
+    // CREATE CATEGORY
+
+    @PostMapping(path = "Admin/adminCreateCategory")
+    public ResponseEntity<?>createCategoryMethod(@RequestBody CategoryModel categoryModel){
+        try{
+            return medEService.createCategory(categoryModel);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Error",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
@@ -282,6 +295,21 @@ public class MedEController {
             e.printStackTrace();
         }
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    // STORE LOCATION ADDING ( UPDATE STORE TABLE )
+
+    @PutMapping(path = "Store/AddStoreLocation")
+    public ResponseEntity<?>addStoreLocationMrthod(@RequestParam Integer store_Id,
+                                             @RequestParam Double longitude,
+                                             @RequestParam Double latitude){
+        try{
+            return medEService.addStoreLocation(store_Id,longitude,latitude);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

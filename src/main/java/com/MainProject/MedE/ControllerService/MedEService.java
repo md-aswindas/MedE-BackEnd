@@ -249,6 +249,24 @@ public class MedEService {
     }
 
 
+    // ADMIN CREATE CATEGORY
+
+    @Autowired
+    private CategoryRepo categoryRepo;
+
+    public ResponseEntity<?> createCategory(CategoryModel categoryModel) {
+        System.out.println("Received CategoryModel: " + categoryModel);
+        System.out.println("Category Name: " + categoryModel.getCategoryName());
+
+        CategoryModel categoryModel1 = new CategoryModel();
+        categoryModel1.setCategoryName(categoryModel.getCategoryName());
+
+        categoryRepo.save(categoryModel1);
+        System.out.println("Saved CategoryModel: " + categoryModel1);
+        return new ResponseEntity<>(categoryModel1,HttpStatus.CREATED);
+    }
+
+
 
 
                                 // STORE
@@ -380,5 +398,18 @@ public class MedEService {
     }
 
 
+    // STORE ADD LOCATION ( UPDATE STORE TABLE )
 
+    public ResponseEntity<?> addStoreLocation(Integer storeId, Double longitude, Double latitude) {
+        Optional<StoreRegistrationModel> storeOptional = storeRegistrationRepo.findById(storeId);
+
+        if (storeOptional.isPresent()){
+            StoreRegistrationModel store = storeOptional.get();
+            store.setLatitude(latitude);
+            store.setLongitude(longitude);
+            storeRegistrationRepo.save(store);
+            return new ResponseEntity<>("Location Added successfully ",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("location Adding Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

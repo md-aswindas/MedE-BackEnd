@@ -41,6 +41,12 @@ public class StoreRegistrationModel {
     @Column(name = "statusUpdate_at")
     private LocalDate statusUpdate_at;
 
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
     public StoreRegistrationModel() {
         this.status_id = 1;
     }
@@ -115,5 +121,21 @@ public class StoreRegistrationModel {
 
     public void setStatusUpdate_at(LocalDate statusUpdate_at) {
         this.statusUpdate_at = statusUpdate_at;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 }
