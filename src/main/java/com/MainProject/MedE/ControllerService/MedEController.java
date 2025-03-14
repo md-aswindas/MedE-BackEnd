@@ -8,12 +8,15 @@ import com.MainProject.MedE.Store.*;
 import com.MainProject.MedE.UserRegistration.PrescriptionModel;
 import com.MainProject.MedE.UserRegistration.UserLoginDto;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +27,13 @@ public class MedEController {
 
     @Autowired
     private MedEService medEService;
+    private static final Logger logger = LoggerFactory.getLogger(MedEController.class);
 
 
 
 
-                                  // U S E R
+
+    // U S E R
 
 
 
@@ -285,6 +290,16 @@ public class MedEController {
         return new ResponseEntity<>("Update Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @DeleteMapping(path = "Store/deleteProduct")
+    public ResponseEntity<?>deleteProductMethod(@RequestParam Integer productId){
+        try{
+            return medEService.deleteProduct(productId);
+        } catch ( Exception e ){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("delete failed ",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     // STORE VIEW ALL PRODUCTS
 
     @GetMapping(path = "Store/StoreViewAllProducts")
@@ -296,6 +311,17 @@ public class MedEController {
         }
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+//    @GetMapping("/image/{id}")
+//    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer id) {
+//        Optional<byte[]> imageData = medEService.getImageByProductId(id);
+//
+//        return imageData.map(bytes -> ResponseEntity
+//                        .ok()
+//                        .header("Content-Type", "image/jpeg") // Ensure correct MIME type
+//                        .body(bytes))
+//                .orElseGet(() -> ResponseEntity.notFound().build());
+//    }
 
 
     // STORE LOCATION ADDING ( UPDATE STORE TABLE )
@@ -310,6 +336,19 @@ public class MedEController {
             e.printStackTrace();
         }
         return new ResponseEntity<>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE SEARCH PRODUCT
+
+    @GetMapping(path = "Store/searchStoreProduct")
+    public ResponseEntity<?>searchStoreProductMethod(@RequestParam Integer store_id,
+                                                     @RequestParam String productName){
+        try{
+            return medEService.searchStoreProduct(store_id,productName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("search failed",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

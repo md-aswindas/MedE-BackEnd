@@ -397,6 +397,16 @@ public class MedEService {
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
 
+//    public Optional<byte[]> getImageByProductId(Integer productId) {
+//        Optional<byte[]> imageData = productRepo.findImageByProductId(productId);
+//
+//        if (imageData.isPresent() && imageData.get().length > 0) {
+//            return imageData;
+//        } else {
+//            return Optional.empty(); // Return empty if no image exists
+//        }
+//    }
+
 
     // STORE ADD LOCATION ( UPDATE STORE TABLE )
 
@@ -412,4 +422,32 @@ public class MedEService {
         }
         return new ResponseEntity<>("location Adding Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // STORE DELETE PRODUCT
+
+    public ResponseEntity<?> deleteProduct(Integer productId) {
+        Optional<ProductModel> productModelOptional = productRepo.findById(productId);
+
+        if (productModelOptional.isPresent()){
+            ProductModel product = productModelOptional.get();
+            productRepo.delete(product);
+            return new ResponseEntity<>("Product Deleted Successfully",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("product not found", HttpStatus.NOT_FOUND);
+    }
+
+    // STORE SEARCH PRODUCT
+
+    public ResponseEntity<?> searchStoreProduct(Integer storeId, String productName) {
+        Optional<StoreRegistrationModel> storeModelOptional = storeRegistrationRepo.findById(storeId);
+
+        if (storeModelOptional.isPresent()){
+            List<ProductModel> products = productRepo.findByStoreIdAndProductNameContainingIgnoreCase(storeId,productName);
+            if (products.isEmpty()){
+                return new ResponseEntity<>("not found ",HttpStatus.NOT_FOUND);
+            }return new ResponseEntity<>(products,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("store not found",HttpStatus.NOT_FOUND);
+    }
+
 }

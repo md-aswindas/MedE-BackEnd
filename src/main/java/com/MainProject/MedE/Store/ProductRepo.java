@@ -10,4 +10,11 @@ public interface ProductRepo extends JpaRepository<ProductModel,Integer> {
     List<ProductModel> findAllByStoreId(Integer storeId);
 
     List<ProductModel> findByProductNameContainingIgnoreCase(String productName);
+
+
+    Optional<byte[]> findImageByProductId(Integer productId);
+
+    Optional<ProductModel> findByProductName(String productName);
+
+    List<ProductModel> findByStoreIdAndProductNameContainingIgnoreCase(Integer storeId, String productName);
 }
