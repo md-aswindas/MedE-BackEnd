@@ -266,6 +266,14 @@ public class MedEService {
         return new ResponseEntity<>(categoryModel1,HttpStatus.CREATED);
     }
 
+    // ADMIN ADD CATEGORY
+
+    public ResponseEntity<?> addCategory(CategoryModel categoryModel) {
+        CategoryModel categoryModel1 = new CategoryModel();
+        categoryModel1.setCategoryName(categoryModel.getCategoryName());
+        categoryRepo.save(categoryModel1);
+        return new ResponseEntity<>("Category Added Successfully",HttpStatus.CREATED);
+    }
 
 
 
@@ -449,5 +457,6 @@ public class MedEService {
         }
         return new ResponseEntity<>("store not found",HttpStatus.NOT_FOUND);
     }
+
 
 }

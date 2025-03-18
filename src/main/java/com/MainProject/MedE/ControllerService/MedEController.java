@@ -207,6 +207,16 @@ public class MedEController {
         return new ResponseEntity<>("Error",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // ADD CATEGORY
+
+    @PostMapping(path = "Admin/adminAddCategory")
+    public ResponseEntity<?>addCategoryMethod(@RequestBody CategoryModel categoryModel){
+        try{
+            return medEService.addCategory(categoryModel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
                             // STORE
 
