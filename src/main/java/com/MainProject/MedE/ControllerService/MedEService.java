@@ -224,6 +224,7 @@ public class MedEService {
     public ResponseEntity<List<AdminViewProductDTO>> adminViewProductsWithName() {
         List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
         List<ProductModel> productModelList = productRepo.findAll();
+
         if(!productModelList.isEmpty()){
             for (ProductModel pdm : productModelList){
                 AdminViewProductDTO adminViewProductDTO = new AdminViewProductDTO();
@@ -234,13 +235,21 @@ public class MedEService {
                 adminViewProductDTO.setOfferPercentage(pdm.getOfferPercentage());
                 adminViewProductDTO.setFinalDiscountPrice(pdm.getDiscountPrice());
                 adminViewProductDTO.setStockCount(pdm.getStock());
+                adminViewProductDTO.setExpiryDate(pdm.getExpiryDate());
+                adminViewProductDTO.setProductDescription(pdm.getProductDesc());
 
                 Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
+                Optional<CategoryModel> categoryModelOptional = categoryRepo.findById(pdm.getCategoryId());
 
                 if(storeRegistrationModelOptional.isPresent()){
                     StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
                     adminViewProductDTO.setStoreName(storeRegistrationModel.getStore_name());
                 }
+                if (categoryModelOptional.isPresent()){
+                    CategoryModel categoryModel = categoryModelOptional.get();
+                    adminViewProductDTO.setCategoryName(categoryModel.getCategoryName());
+                }
+
                 adminViewProductDTOList.add(adminViewProductDTO);
             }
             return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.OK);
@@ -405,16 +414,6 @@ public class MedEService {
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
 
-//    public Optional<byte[]> getImageByProductId(Integer productId) {
-//        Optional<byte[]> imageData = productRepo.findImageByProductId(productId);
-//
-//        if (imageData.isPresent() && imageData.get().length > 0) {
-//            return imageData;
-//        } else {
-//            return Optional.empty(); // Return empty if no image exists
-//        }
-//    }
-
 
     // STORE ADD LOCATION ( UPDATE STORE TABLE )
 
@@ -458,5 +457,14 @@ public class MedEService {
         return new ResponseEntity<>("store not found",HttpStatus.NOT_FOUND);
     }
 
+    // STORE LOAD CATEGORIES
+
+    public ResponseEntity<?> loadCategories() {
+        List<CategoryModel> categoryModelOptional = categoryRepo.findAll();
+        if (!categoryModelOptional.isEmpty()){
+            return new ResponseEntity<>(categoryModelOptional,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("no category",HttpStatus.NOT_FOUND);
+    }
 
 }

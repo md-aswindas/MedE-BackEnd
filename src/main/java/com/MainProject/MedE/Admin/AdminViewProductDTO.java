@@ -3,6 +3,8 @@ package com.MainProject.MedE.Admin;
 import lombok.Data;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.time.LocalDate;
+
 @Data
 @CrossOrigin
 public class AdminViewProductDTO {
@@ -16,6 +18,9 @@ public class AdminViewProductDTO {
     private double actualPrice;
     private Integer offerPercentage;
     private double finalDiscountPrice;
+    private Integer categoryId;
+    private String categoryName;
+    private LocalDate expiryDate;
 
     public Integer getStoreId() {
         return storeId;
@@ -87,5 +92,29 @@ public class AdminViewProductDTO {
 
     public void setStoreName(String storeName) {
         this.storeName = storeName;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
     }
 }

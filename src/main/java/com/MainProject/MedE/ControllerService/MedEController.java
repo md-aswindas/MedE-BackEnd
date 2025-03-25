@@ -11,12 +11,12 @@ import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.origin.Origin;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -278,6 +278,7 @@ public class MedEController {
         try{
             return medEService.addProduct(productModel,productImage);
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -300,6 +301,7 @@ public class MedEController {
         return new ResponseEntity<>("Update Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    //  STORE DELETE PRODUCT
     @DeleteMapping(path = "Store/deleteProduct")
     public ResponseEntity<?>deleteProductMethod(@RequestParam Integer productId){
         try{
@@ -321,18 +323,6 @@ public class MedEController {
         }
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-//    @GetMapping("/image/{id}")
-//    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer id) {
-//        Optional<byte[]> imageData = medEService.getImageByProductId(id);
-//
-//        return imageData.map(bytes -> ResponseEntity
-//                        .ok()
-//                        .header("Content-Type", "image/jpeg") // Ensure correct MIME type
-//                        .body(bytes))
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
-
 
     // STORE LOCATION ADDING ( UPDATE STORE TABLE )
 
@@ -360,5 +350,24 @@ public class MedEController {
         }
         return new ResponseEntity<>("search failed",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // STORE LOADCATEGORIES
+
+    @GetMapping(path = "Store/loadCategories")
+    public ResponseEntity<?>loadCategoriesMethod(){
+        return medEService.loadCategories();
+    }
+
+    // STORE LOAD PRODUCT
+
+//    @GetMapping(path = "Store/loadProducts")
+//    public ResponseEntity<?>loadProductsMethod(@RequestParam Integer productId){
+//        try{
+//            return medEService.loadProducts(productId);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>("load failed",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
 }
