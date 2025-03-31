@@ -27,7 +27,9 @@ public class MedEService {
     private UserRegistrationRepo userRegistrationRepo;
 
 
-                                // USER
+
+
+    // USER
 
 
     // USER REGISTRATION
@@ -121,9 +123,65 @@ public class MedEService {
         }return new ResponseEntity<>("item found",HttpStatus.FOUND);
     }
 
+    // ADD FEEDBACK
+
+    @Autowired FeedBackRepo feedBackRepo;
+
+//    public ResponseEntity<?> addFeedBack(FeedBackModel feedBackModel) {
+//
+//        Optional<UserRegistrationModel>userRegistrationModelOptional=userRegistrationRepo.findById(feedBackModel.getUser_id());
+//        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(feedBackModel.getStore_id());
+//        if (userRegistrationModelOptional.isPresent() && storeRegistrationModelOptional.isPresent()){
+//            Optional<FeedBackModel>feedBackModelOptional=feedBackRepo.findById(feedBackModel.getUser_id());
+//
+//            if (!feedBackModelOptional.isPresent()) {
+//                FeedBackModel feedBackModel1 = new FeedBackModel();
+//                feedBackModel1.setStore_id(feedBackModel.getStore_id());
+//                feedBackModel1.setComment(feedBackModel.getComment());
+//                feedBackModel1.setRating(feedBackModel.getRating());
+//                feedBackModel1.setUser_id(feedBackModel1.getUser_id());
+//                feedBackRepo.save(feedBackModel1);
+//            } else{
+//                return new ResponseEntity<>("feedback already added",HttpStatus.NOT_ACCEPTABLE);
+//            }
+//        }
+//
+//        return new ResponseEntity<>("Feedback Added",HttpStatus.OK);
+//    }
+
+    public ResponseEntity<?> addFeedBack(FeedBackModel feedBackModel) {
+        // Check if user and store exist
+        Optional<UserRegistrationModel> userOptional = userRegistrationRepo.findById(feedBackModel.getUser_id());
+        Optional<StoreRegistrationModel> storeOptional = storeRegistrationRepo.findById(feedBackModel.getStore_id());
+
+        if (userOptional.isPresent() && storeOptional.isPresent()) {
+            // Check if the user already gave feedback to the same store
+            Optional<FeedBackModel> existingFeedback = feedBackRepo.findByUserAndStore(
+                    feedBackModel.getUser_id(),
+                    feedBackModel.getStore_id()
+            );
+
+            if (existingFeedback.isPresent()) {
+                return new ResponseEntity<>("Feedback already added for this store", HttpStatus.NOT_ACCEPTABLE);
+            }
+
+            // Allow feedback submission
+            FeedBackModel newFeedback = new FeedBackModel();
+            newFeedback.setStore_id(feedBackModel.getStore_id());
+            newFeedback.setUser_id(feedBackModel.getUser_id());
+            newFeedback.setComment(feedBackModel.getComment());
+            newFeedback.setRating(feedBackModel.getRating());
+
+            feedBackRepo.save(newFeedback);
+
+            return new ResponseEntity<>("Feedback Added Successfully", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Invalid User or Store", HttpStatus.BAD_REQUEST);
+    }
 
 
-                                    // ADMIN
+    // ADMIN
 
 
 
@@ -467,4 +525,20 @@ public class MedEService {
         return new ResponseEntity<>("no category",HttpStatus.NOT_FOUND);
     }
 
+
+    public byte[] getProductImageById(Integer productId) {
+
+            Optional<ProductModel> product = productRepo.findById(productId);
+
+            return product.map(ProductModel::getProductImage).orElse(null);
+        }
+
+
+    public ResponseEntity<?> fetchFeedback(Integer store_id) {
+        List<FeedBackModel> feedbackList = feedBackRepo.findByStore(store_id);
+        if (!feedbackList.isEmpty()) {
+            return new ResponseEntity<>(feedbackList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No feedback found for this store", HttpStatus.NOT_FOUND);
+    }
 }

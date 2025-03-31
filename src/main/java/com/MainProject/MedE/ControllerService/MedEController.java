@@ -116,6 +116,13 @@ public class MedEController {
         return medEService.searchProduct(productName);
     }
 
+    // USER ADD FEEDBACK
+
+    @PostMapping(path = "User/addFeedBack")
+    public ResponseEntity<?> addFeedBack(@RequestBody FeedBackModel feedBackModel){
+        return medEService.addFeedBack(feedBackModel);
+    }
+
 
 
                                 // A D M I N
@@ -370,4 +377,23 @@ public class MedEController {
 //        return new ResponseEntity<>("load failed",HttpStatus.INTERNAL_SERVER_ERROR);
 //    }
 
+    // FETCH IMAGE
+
+    @GetMapping(path = "Store/fetchImage")
+    public ResponseEntity<byte[]> fetchImageMethod(@RequestParam Integer productId){
+        byte[] imageData = medEService.getProductImageById(productId);
+
+        if (imageData == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok().body(imageData);
+    }
+
+    // STORE FETCH FEEDBACK
+
+    @GetMapping(path = "Store/fetchFeedBack")
+    public ResponseEntity<?> fetchFeedBack(@RequestParam Integer Store_id){
+        return medEService.fetchFeedback(Store_id);
+    }
 }
