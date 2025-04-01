@@ -103,15 +103,20 @@ public class MedEService {
 
     public ResponseEntity<?> uploadPrescription(PrescriptionModel prescriptionModel, MultipartFile prescriptionImage) throws IOException {
         Optional<UserRegistrationModel>userRegistrationModelOptional=userRegistrationRepo.findById(prescriptionModel.getUser_id());
-        if(userRegistrationModelOptional.isPresent()) {
-            PrescriptionModel prescriptionModel1 = new PrescriptionModel();
-            prescriptionModel1.setUser_id(prescriptionModel.getUser_id());
-            prescriptionModel1.setPrescriptionImage(prescriptionImage.getBytes());
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(prescriptionModel.getStoreId());
+        if (storeRegistrationModelOptional.isPresent()){
+            if(userRegistrationModelOptional.isPresent()) {
+                PrescriptionModel prescriptionModel1 = new PrescriptionModel();
+                prescriptionModel1.setUser_id(prescriptionModel.getUser_id());
+                prescriptionModel1.setStoreId(prescriptionModel.getStoreId());
+                prescriptionModel1.setPrescriptionImage(prescriptionImage.getBytes());
 
-            prescriptionRepo.save(prescriptionModel1);
-            return new ResponseEntity<>(prescriptionModel1, HttpStatus.OK);
+                prescriptionRepo.save(prescriptionModel1);
+                return new ResponseEntity<>(prescriptionModel1, HttpStatus.OK);
+            }
+            return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("store not found",HttpStatus.NOT_FOUND);
     }
 
     // SEARCH PRODUCT
@@ -533,6 +538,7 @@ public class MedEService {
             return product.map(ProductModel::getProductImage).orElse(null);
         }
 
+//  STORE FETCH FEEDBACK
 
     public ResponseEntity<?> fetchFeedback(Integer store_id) {
         List<FeedBackModel> feedbackList = feedBackRepo.findByStore(store_id);
@@ -540,5 +546,43 @@ public class MedEService {
             return new ResponseEntity<>(feedbackList, HttpStatus.OK);
         }
         return new ResponseEntity<>("No feedback found for this store", HttpStatus.NOT_FOUND);
+    }
+
+
+
+    // STORE FETCH PRESCRIPTION
+
+//    public ResponseEntity<?> fetchPrescription(Integer storeId) {
+//        Optional<PrescriptionModel> prescriptionModelList = prescriptionRepo.findById(storeId);
+//        if (!prescriptionModelList.isEmpty()){
+//            return new ResponseEntity<>(prescriptionModelList, HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("no Prescription found for this store",HttpStatus.NOT_FOUND);
+//    }
+
+    public ResponseEntity<List<PrescriptionDTO>> fetchPrescription(Integer storeId) {
+        List<PrescriptionDTO> prescriptionDTOList = new ArrayList<>();
+        List<PrescriptionModel> prescriptionModelList = prescriptionRepo.findByStoreId(storeId);
+        for (PrescriptionModel prescription : prescriptionModelList) {
+            Optional<UserRegistrationModel> userOptional = userRegistrationRepo.findById(prescription.getUser_id());
+
+            if (userOptional.isPresent()) {
+                UserRegistrationModel user = userOptional.get();
+
+                PrescriptionDTO dto = new PrescriptionDTO();
+                dto.setUserId(user.getUser_id());
+                dto.setUserName(user.getName());
+                dto.setEmail(user.getEmail());
+                dto.setPhoneNumber(user.getPhoneNumber());
+                dto.setPrescriptionImage(prescription.getPrescriptionImage());
+
+                prescriptionDTOList.add(dto);
+            }
+
+        }
+        if (prescriptionDTOList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(prescriptionDTOList, HttpStatus.OK);
     }
 }

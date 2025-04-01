@@ -17,6 +17,9 @@ public class PrescriptionModel {
     @Column(name = "user_id")
     private Integer user_id;
 
+    @Column(name = "storeId")
+    private Integer storeId;
+
     @Lob
     @Column(name = "prescriptionImage")
     private byte[] prescriptionImage;
@@ -43,5 +46,13 @@ public class PrescriptionModel {
 
     public void setPrescriptionImage(byte[] prescriptionImage) {
         this.prescriptionImage = prescriptionImage;
+    }
+
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Integer storeId) {
+        this.storeId = storeId;
     }
 }

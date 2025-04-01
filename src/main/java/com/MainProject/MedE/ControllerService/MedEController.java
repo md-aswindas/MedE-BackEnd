@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.origin.Origin;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class MedEController {
 
     @Autowired
     private MedEService medEService;
-    private static final Logger logger = LoggerFactory.getLogger(MedEController.class);
+//    private static final Logger logger = LoggerFactory.getLogger(MedEController.class);
 
 
 
@@ -395,5 +396,17 @@ public class MedEController {
     @GetMapping(path = "Store/fetchFeedBack")
     public ResponseEntity<?> fetchFeedBack(@RequestParam Integer Store_id){
         return medEService.fetchFeedback(Store_id);
+    }
+
+    // FETCH PRESCRIPTIONS
+
+//    @GetMapping(path = "Store/fetchPrescription")
+//    public ResponseEntity<?> fetchPrescription(@RequestParam Integer storeId){
+//        return medEService.fetchPrescription(storeId);
+//    }
+
+    @GetMapping(path = "Store/fetchPrescription")
+    public ResponseEntity<List<PrescriptionDTO>> fetchPrescription(@RequestParam Integer storeId){
+        return medEService.fetchPrescription(storeId);
     }
 }
