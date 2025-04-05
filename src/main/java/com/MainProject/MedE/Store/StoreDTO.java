@@ -28,6 +28,16 @@ public class StoreDTO {
 
     private LocalDate statusUpdateDate;
 
+    private Long phoneNumber;
+
+    public Long getPhoneNumber(Long phoneNumber) {
+        return this.phoneNumber;
+    }
+
+    public void setPhoneNumber(Long phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     public Integer getStoreId() {
         return storeId;
     }
@@ -92,7 +102,7 @@ public class StoreDTO {
         this.statusUpdateDate = statusUpdateDate;
     }
 
-    public String getStorePassword() {
+    public String getStorePassword(String password) {
         return storePassword;
     }
 

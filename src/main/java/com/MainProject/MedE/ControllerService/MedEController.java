@@ -409,4 +409,16 @@ public class MedEController {
     public ResponseEntity<List<PrescriptionDTO>> fetchPrescription(@RequestParam Integer storeId){
         return medEService.fetchPrescription(storeId);
     }
+
+    // STORE ADD ADVERTISEMENT
+
+    @PostMapping(path = "Store/addAds")
+    public ResponseEntity<?> addAds(@RequestBody AdsModel adsModel){
+        try {
+            return medEService.addAds(adsModel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

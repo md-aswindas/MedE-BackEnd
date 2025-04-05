@@ -241,6 +241,8 @@ public class MedEService {
                 storeDTO.setStatusId(urm.getStatus_id());
                 storeDTO.setRegistrationDate(urm.getCreated_at());
                 storeDTO.setStatusUpdateDate(urm.getStatusUpdate_at());
+                storeDTO.setPhoneNumber(urm.getPhone_number());
+                storeDTO.setStorePassword(urm.getPassword());
 
                 Optional<StatusModel> statusModelOptional=statusRepo.findById(urm.getStatus_id());
                 if(statusModelOptional.isPresent()){
@@ -405,8 +407,12 @@ public class MedEService {
 
     public ResponseEntity<?> storeLogin(StoreLoginDto storeLoginDto) {
         Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findByLicenseNumberAndPassword(storeLoginDto.getLicenseNumber(),storeLoginDto.getPassword());
+
         if(storeRegistrationModelOptional.isPresent()){
-            return new ResponseEntity<>("login success",HttpStatus.OK);
+            StoreLoginDto storeLoginDto1 = new StoreLoginDto();
+//            storeLoginDto1.setLicenseNumber(storeRegistrationModelOptional.get().getLicenseNumber());
+            storeLoginDto1.setStore_id(storeRegistrationModelOptional.get().getStore_id());
+            return new ResponseEntity<>(storeLoginDto1,HttpStatus.OK);
         }
         return new ResponseEntity<>("licnseNumber and password not match",HttpStatus.NOT_FOUND);
     }
@@ -584,5 +590,30 @@ public class MedEService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(prescriptionDTOList, HttpStatus.OK);
+    }
+
+    // STORE ADD ADVERTISEMENT
+
+    @Autowired
+    private AdsRepo adsRepo;
+
+    public ResponseEntity<?> addAds(AdsModel adsModel) {
+        Optional<StoreRegistrationModel>adsModelOptional=storeRegistrationRepo.findById(adsModel.getStoreId());
+
+        if(adsModelOptional.isPresent()) {
+            AdsModel adsModel1 = new AdsModel();
+
+            adsModel1.setOfferName(adsModel.getOfferName());
+            adsModel1.setStoreId(adsModel.getStoreId());
+            adsModel1.setOfferPercentage(adsModel.getOfferPercentage());
+            adsModel1.setStartDate(adsModel.getStartDate());
+            adsModel1.setEndDate(adsModel.getEndDate());
+            adsModel1.setConditions(adsModel.getConditions());
+
+            adsRepo.save(adsModel1);
+
+            return new ResponseEntity<>(adsModel1, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id not found",HttpStatus.NOT_FOUND);
     }
 }
