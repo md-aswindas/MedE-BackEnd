@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -427,5 +428,15 @@ public class MedEController {
     @GetMapping(path = "Store/profile")
     public ResponseEntity<List<StoreDTO>>storeProfile(@RequestParam Integer Store_id){
         return medEService.storeProfile(Store_id);
+    }
+
+    // STORE UPDATE PROFILE
+
+    @PutMapping(path = "Store/updateProfile")
+    public ResponseEntity<?>updateProfile(@RequestParam Integer store_id,
+                                          @RequestParam String store_name,
+                                          @RequestParam String password,
+                                          @RequestParam Long phone_number){
+        return medEService.updateProfile(store_id,store_name,password,phone_number);
     }
 }

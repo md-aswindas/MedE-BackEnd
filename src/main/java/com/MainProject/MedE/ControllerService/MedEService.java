@@ -618,6 +618,7 @@ public class MedEService {
     }
 
     // STORE FETCH PROFILE
+
     public ResponseEntity<List<StoreDTO>> storeProfile(Integer storeId) {
 
         Optional<StoreRegistrationModel> storeRegistrationModelList= storeRegistrationRepo.findById(storeId);
@@ -646,5 +647,21 @@ public class MedEService {
             return new ResponseEntity<>(storeDTOList,HttpStatus.OK);
         }
         return new ResponseEntity<>(storeDTOList,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE UPDATE PROFILE
+
+    public ResponseEntity<?> updateProfile(Integer storeId, String storeName, String password, Long phoneNumber) {
+        Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(storeId);
+        if (storeRegistrationModelOptional.isPresent()){
+            StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
+            storeRegistrationModel.setStore_name(storeName);
+            storeRegistrationModel.setPassword(password);
+            storeRegistrationModel.setPhone_number(phoneNumber);
+
+            storeRegistrationRepo.save(storeRegistrationModel);
+            return new ResponseEntity<>(storeRegistrationModel,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
     }
 }
