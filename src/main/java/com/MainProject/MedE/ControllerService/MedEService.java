@@ -616,4 +616,35 @@ public class MedEService {
         }
         return new ResponseEntity<>("Id not found",HttpStatus.NOT_FOUND);
     }
+
+    // STORE FETCH PROFILE
+    public ResponseEntity<List<StoreDTO>> storeProfile(Integer storeId) {
+
+        Optional<StoreRegistrationModel> storeRegistrationModelList= storeRegistrationRepo.findById(storeId);
+        List<StoreDTO> storeDTOList = new ArrayList<>();
+        if(storeRegistrationModelList.isPresent()){
+                StoreRegistrationModel urm = storeRegistrationModelList.get();;
+
+                StoreDTO storeDTO = new StoreDTO();
+                storeDTO.setStoreId(urm.getStore_id());
+                storeDTO.setStoreName(urm.getStore_name());
+                storeDTO.setLicenseNumber(urm.getLicenseNumber());
+                storeDTO.setStatusId(urm.getStatus_id());
+                storeDTO.setRegistrationDate(urm.getCreated_at());
+                storeDTO.setStatusUpdateDate(urm.getStatusUpdate_at());
+                storeDTO.setPhoneNumber(urm.getPhone_number());
+                storeDTO.setStorePassword(urm.getPassword());
+
+                Optional<StatusModel> statusModelOptional=statusRepo.findById(urm.getStatus_id());
+                if(statusModelOptional.isPresent()){
+                    StatusModel statusModel = statusModelOptional.get();
+                    storeDTO.setStatusName(statusModel.getStatus_name());
+                }
+                storeDTOList.add(storeDTO);
+
+
+            return new ResponseEntity<>(storeDTOList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(storeDTOList,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

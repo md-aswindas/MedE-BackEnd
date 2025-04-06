@@ -421,4 +421,11 @@ public class MedEController {
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // STORE FETCH PROFILE
+
+    @GetMapping(path = "Store/profile")
+    public ResponseEntity<List<StoreDTO>>storeProfile(@RequestParam Integer Store_id){
+        return medEService.storeProfile(Store_id);
+    }
 }
