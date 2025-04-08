@@ -463,4 +463,16 @@ public class MedEController {
         }
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // REJECT PRESCRIPTION
+
+    @DeleteMapping(path = "Store/rejectPrescription")
+    public ResponseEntity<?>rejectPrescription(@RequestParam Integer prescriptionId){
+        try{
+            return medEService.rejectPrescription(prescriptionId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

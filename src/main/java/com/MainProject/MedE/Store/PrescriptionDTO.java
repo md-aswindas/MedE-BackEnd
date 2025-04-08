@@ -10,6 +10,7 @@ public class PrescriptionDTO {
     private Integer userId;
     private String email;
     private Integer phoneNumber;
+    private Integer prescriptionId;
     private byte[] prescriptionImage;
 
     public String getUserName() {
@@ -22,6 +23,14 @@ public class PrescriptionDTO {
 
     public Integer getUserId() {
         return userId;
+    }
+
+    public Integer getPrescriptionId() {
+        return prescriptionId;
+    }
+
+    public void setPrescriptionId(Integer prescriptionId) {
+        this.prescriptionId = prescriptionId;
     }
 
     public void setUserId(Integer userId) {

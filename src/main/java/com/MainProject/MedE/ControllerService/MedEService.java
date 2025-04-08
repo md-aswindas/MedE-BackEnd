@@ -665,6 +665,8 @@ public class MedEService {
         return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
     }
 
+    // STORE FETCH ADS
+
     public ResponseEntity<?> fetchAds(Integer storeId) {
         List<AdsModel> adsModelList=adsRepo.findAllByStoreId(storeId);
         if (!adsModelList.isEmpty()){
@@ -672,6 +674,8 @@ public class MedEService {
         }
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
+
+    // STORE DELETE ADS
 
     public ResponseEntity<?> deleteAds(Integer adsId) {
         Optional<AdsModel>optionalAdsModel=adsRepo.findById(adsId);
@@ -683,4 +687,15 @@ public class MedEService {
         return new ResponseEntity<>("Id not found",HttpStatus.NOT_FOUND);
     }
 
+    // STORE REJECT PRESCRIPTION
+
+    public ResponseEntity<?> rejectPrescription(Integer prescriptionId) {
+        Optional<PrescriptionModel>optionalPrescriptionModel=prescriptionRepo.findById(prescriptionId);
+        if(optionalPrescriptionModel.isPresent()){
+            PrescriptionModel prescriptionModel = optionalPrescriptionModel.get();
+            prescriptionRepo.delete(prescriptionModel);
+            return new ResponseEntity<>("prescription Rejected",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("prescription not found",HttpStatus.NOT_FOUND);
+    }
 }
