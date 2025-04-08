@@ -664,4 +664,23 @@ public class MedEService {
         }
         return new ResponseEntity<>("id not found",HttpStatus.NOT_FOUND);
     }
+
+    public ResponseEntity<?> fetchAds(Integer storeId) {
+        List<AdsModel> adsModelList=adsRepo.findAllByStoreId(storeId);
+        if (!adsModelList.isEmpty()){
+            return new ResponseEntity<>(adsModelList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> deleteAds(Integer adsId) {
+        Optional<AdsModel>optionalAdsModel=adsRepo.findById(adsId);
+        if (optionalAdsModel.isPresent()){
+            AdsModel adsModel = optionalAdsModel.get();
+            adsRepo.delete(adsModel);
+            return new ResponseEntity<>("Delete success",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id not found",HttpStatus.NOT_FOUND);
+    }
+
 }

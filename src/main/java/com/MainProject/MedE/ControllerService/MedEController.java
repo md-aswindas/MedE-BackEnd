@@ -439,4 +439,28 @@ public class MedEController {
                                           @RequestParam Long phone_number){
         return medEService.updateProfile(store_id,store_name,password,phone_number);
     }
+
+    // STORE FETCH ADS
+
+    @GetMapping(path = "Store/fetchAds")
+    public ResponseEntity<?>fetchAds(@RequestParam Integer store_id){
+        try{
+            return medEService.fetchAds(store_id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE DELETE ADS
+
+    @DeleteMapping(path = "Store/deleteAds")
+    public ResponseEntity<?>deleteads(@RequestParam Integer adsId){
+        try{
+            return medEService.deleteAds(adsId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
