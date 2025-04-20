@@ -464,12 +464,28 @@ public class MedEController {
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // PRESCRIPTION ACCEPT AND REJECT WITH MESSAGE
+    @Autowired
+    private SmsService smsService;
+
     // REJECT PRESCRIPTION
 
-    @DeleteMapping(path = "Store/rejectPrescription")
-    public ResponseEntity<?>rejectPrescription(@RequestParam Integer prescriptionId){
+    @PutMapping("Store/rejectPrescription")
+    public ResponseEntity<?> rejectPrescription(@RequestParam Integer prescriptionId, @RequestParam String rejectionReason, @RequestParam Integer storeId) {
         try{
-            return medEService.rejectPrescription(prescriptionId);
+            return medEService.rejectPrescription(prescriptionId, rejectionReason, storeId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // ACCEPT PRESCRIPTION
+
+    @PutMapping("Store/acceptPrescription")
+    public ResponseEntity<?> acceptPrescription(@RequestParam Integer prescriptionId) {
+        try{
+            return medEService.acceptPrescription(prescriptionId);
         } catch (Exception e) {
             e.printStackTrace();
         }

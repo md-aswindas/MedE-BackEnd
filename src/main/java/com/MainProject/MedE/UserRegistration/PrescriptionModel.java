@@ -24,6 +24,13 @@ public class PrescriptionModel {
     @Column(name = "prescriptionImage")
     private byte[] prescriptionImage;
 
+    @Column(name = "status")  // Status like "Pending", "Accepted", "Rejected"
+    private String status;
+
+    @Column(name = "rejectionReason")  // Reason for rejection if any
+    private String rejectionReason;
+
+
     public Integer getPrescriptionId() {
         return prescriptionId;
     }
@@ -46,6 +53,22 @@ public class PrescriptionModel {
 
     public void setPrescriptionImage(byte[] prescriptionImage) {
         this.prescriptionImage = prescriptionImage;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public Integer getStoreId() {

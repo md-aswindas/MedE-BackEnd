@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -581,7 +582,7 @@ public class MedEService {
                 dto.setEmail(user.getEmail());
                 dto.setPhoneNumber(user.getPhoneNumber());
                 dto.setPrescriptionImage(prescription.getPrescriptionImage());
-
+                dto.setPrescriptionId(prescription.getPrescriptionId());
                 prescriptionDTOList.add(dto);
             }
 
@@ -689,13 +690,56 @@ public class MedEService {
 
     // STORE REJECT PRESCRIPTION
 
-    public ResponseEntity<?> rejectPrescription(Integer prescriptionId) {
-        Optional<PrescriptionModel>optionalPrescriptionModel=prescriptionRepo.findById(prescriptionId);
-        if(optionalPrescriptionModel.isPresent()){
-            PrescriptionModel prescriptionModel = optionalPrescriptionModel.get();
-            prescriptionRepo.delete(prescriptionModel);
-            return new ResponseEntity<>("prescription Rejected",HttpStatus.OK);
+//    public ResponseEntity<?> rejectPrescription(Integer prescriptionId) {
+//        Optional<PrescriptionModel>optionalPrescriptionModel=prescriptionRepo.findById(prescriptionId);
+//        if(optionalPrescriptionModel.isPresent()){
+//            PrescriptionModel prescriptionModel = optionalPrescriptionModel.get();
+//            prescriptionRepo.delete(prescriptionModel);
+//            return new ResponseEntity<>("prescription Rejected",HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("prescription not found",HttpStatus.NOT_FOUND);
+//    }
+
+@Autowired
+private SmsService smsService;  // To send SMS notifications
+
+    // Reject Prescription and send SMS to user
+
+    @Transactional
+    public ResponseEntity<?> rejectPrescription(Integer prescriptionId, String rejectionReason, Integer storeId) {
+        // Find the prescription by its ID
+        Optional<StoreRegistrationModel> storeRegistrationModel = storeRegistrationRepo.findById(storeId);
+        if (storeRegistrationModel.isPresent()) {
+            PrescriptionModel prescription = prescriptionRepo.findById(prescriptionId)
+                    .orElseThrow(() -> new RuntimeException("Prescription not found"));
+
+            // Update the prescription status and set the rejection reason
+            prescription.setStatus("Rejected");
+            prescription.setRejectionReason(rejectionReason);
+
+            // Save the updated prescription
+            PrescriptionModel updatedPrescription = prescriptionRepo.save(prescription);
+
+            // Send an SMS to the user informing them of the rejection
+
+            String message = "Dear user, your prescription has been rejected due to: " + rejectionReason + ".";
+            smsService.sendSms("+919567954754", message);  // for India
+
+            return new ResponseEntity<>(updatedPrescription, HttpStatus.OK);
         }
-        return new ResponseEntity<>("prescription not found",HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("no prescription for store",HttpStatus.NOT_FOUND);
+    }
+
+    // ACCEPT PRESCRIPTION
+
+    public ResponseEntity<?> acceptPrescription(Integer prescriptionId) {
+        PrescriptionModel prescription = prescriptionRepo.findById(prescriptionId)
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
+        prescription.setStatus("Accepted");
+        PrescriptionModel updatedPrescription = prescriptionRepo.save(prescription);
+        String message = "Dear user, your prescription is Accepted ";
+        smsService.sendSms("+919567954754", message);  // for India
+
+        return new ResponseEntity<>(updatedPrescription, HttpStatus.OK);
     }
 }
