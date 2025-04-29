@@ -30,12 +30,30 @@ public class StoreDTO {
 
     private Long phoneNumber;
 
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public Long getPhoneNumber(Long phoneNumber) {
         return this.phoneNumber;
     }
 
     public void setPhoneNumber(Long phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getStorePassword() {
+        return storePassword;
+    }
+
+    public Long getPhoneNumber() {
+        return phoneNumber;
     }
 
     public Integer getStoreId() {

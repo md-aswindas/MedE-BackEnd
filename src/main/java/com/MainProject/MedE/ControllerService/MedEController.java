@@ -118,6 +118,12 @@ public class MedEController {
         return medEService.searchProduct(productName);
     }
 
+    // USER SEARCH STORE
+    @GetMapping(path = "User/searchStore")
+    public ResponseEntity<?> searchStore(@RequestParam String storeName){
+        return medEService.searchStore(storeName);
+    }
+
     // USER ADD FEEDBACK
 
     @PostMapping(path = "User/addFeedBack")
@@ -125,9 +131,23 @@ public class MedEController {
         return medEService.addFeedBack(feedBackModel);
     }
 
+    // USER FIND NEARBY STORE
+
+    @GetMapping("User/findNearbyStores")
+    public ResponseEntity<?> findNearbyStores(@RequestParam Double latitude,
+                                              @RequestParam Double longitude) {
+        try {
+            return medEService.findNearbyStores(latitude,longitude);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
-                                // A D M I N
+
+
+    // A D M I N
 
 
 
@@ -333,19 +353,6 @@ public class MedEController {
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // STORE LOCATION ADDING ( UPDATE STORE TABLE )
-
-    @PutMapping(path = "Store/AddStoreLocation")
-    public ResponseEntity<?>addStoreLocationMrthod(@RequestParam Integer store_Id,
-                                             @RequestParam Double longitude,
-                                             @RequestParam Double latitude){
-        try{
-            return medEService.addStoreLocation(store_Id,longitude,latitude);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     // STORE SEARCH PRODUCT
 
@@ -483,12 +490,28 @@ public class MedEController {
     // ACCEPT PRESCRIPTION
 
     @PutMapping("Store/acceptPrescription")
-    public ResponseEntity<?> acceptPrescription(@RequestParam Integer prescriptionId) {
+    public ResponseEntity<?> acceptPrescription(@RequestParam Integer prescriptionId, @RequestParam Integer storeId) {
         try{
-            return medEService.acceptPrescription(prescriptionId);
+            return medEService.acceptPrescription(prescriptionId,storeId);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // STORE LOCATION ADDING ( UPDATE STORE TABLE )
+
+    @PutMapping(path = "Store/AddStoreLocation")
+    public ResponseEntity<?>addStoreLocationMethod(@RequestParam Integer store_Id,
+                                                   @RequestParam Double longitude,
+                                                   @RequestParam Double latitude,
+                                                   @RequestParam String address){
+        try{
+            return medEService.addStoreLocation(store_Id,longitude,latitude,address);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }

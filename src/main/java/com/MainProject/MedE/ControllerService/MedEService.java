@@ -129,6 +129,15 @@ public class MedEService {
         }return new ResponseEntity<>("item found",HttpStatus.FOUND);
     }
 
+    // SEARCH STORE
+
+    public ResponseEntity<?> searchStore(String storeName) {
+        List<StoreRegistrationModel> stores = storeRegistrationRepo.findByStoreNameContainingIgnoreCase(storeName);
+        if (stores.isEmpty()){
+            return new ResponseEntity<>("not found ",HttpStatus.NOT_FOUND);
+        }return new ResponseEntity<>(stores,HttpStatus.OK);
+    }
+
     // ADD FEEDBACK
 
     @Autowired FeedBackRepo feedBackRepo;
@@ -187,6 +196,46 @@ public class MedEService {
     }
 
 
+    // USER FIND NEARBY STORE
+    public ResponseEntity<?> findNearbyStores(Double latitude, Double longitude) {
+        List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
+        List<StoreRegistrationModel> nearbyStores = new ArrayList<>();
+
+        double fixedRadius = 5.0;
+        for(StoreRegistrationModel store: allStores){
+
+            if (store.getLatitude() == null || store.getLongitude() == null) {
+                continue;
+            }
+
+            double distance = calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude());
+
+            if (distance <= fixedRadius) {
+                nearbyStores.add(store);
+            }
+        }
+        return new ResponseEntity<>(nearbyStores,HttpStatus.OK);
+    }
+
+    // distance calculate method
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Radius of the earth in KM
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        double distance = R * c;
+
+        return distance;
+    }
+
+
     // ADMIN
 
 
@@ -237,7 +286,7 @@ public class MedEService {
 
                 StoreDTO storeDTO = new StoreDTO();
                 storeDTO.setStoreId(urm.getStore_id());
-                storeDTO.setStoreName(urm.getStore_name());
+                storeDTO.setStoreName(urm.getStoreName());
                 storeDTO.setLicenseNumber(urm.getLicenseNumber());
                 storeDTO.setStatusId(urm.getStatus_id());
                 storeDTO.setRegistrationDate(urm.getCreated_at());
@@ -309,7 +358,7 @@ public class MedEService {
 
                 if(storeRegistrationModelOptional.isPresent()){
                     StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
-                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStore_name());
+                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStoreName());
                 }
                 if (categoryModelOptional.isPresent()){
                     CategoryModel categoryModel = categoryModelOptional.get();
@@ -378,7 +427,7 @@ public class MedEService {
 
     public ResponseEntity<?> storeRegistration(StoreRegistrationModel storeRegistrationModel, MultipartFile licenseImage) throws IOException {
         StoreRegistrationModel storeRegistrationModel1 = new StoreRegistrationModel();
-        storeRegistrationModel1.setStore_name(storeRegistrationModel.getStore_name());
+        storeRegistrationModel1.setStoreName(storeRegistrationModel.getStoreName());
         storeRegistrationModel1.setLicenseNumber(storeRegistrationModel.getLicenseNumber());
         storeRegistrationModel1.setPhone_number(storeRegistrationModel.getPhone_number());
 
@@ -482,22 +531,6 @@ public class MedEService {
             return new ResponseEntity<>(productModelList,HttpStatus.OK);
         }
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
-    }
-
-
-    // STORE ADD LOCATION ( UPDATE STORE TABLE )
-
-    public ResponseEntity<?> addStoreLocation(Integer storeId, Double longitude, Double latitude) {
-        Optional<StoreRegistrationModel> storeOptional = storeRegistrationRepo.findById(storeId);
-
-        if (storeOptional.isPresent()){
-            StoreRegistrationModel store = storeOptional.get();
-            store.setLatitude(latitude);
-            store.setLongitude(longitude);
-            storeRegistrationRepo.save(store);
-            return new ResponseEntity<>("Location Added successfully ",HttpStatus.OK);
-        }
-        return new ResponseEntity<>("location Adding Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // STORE DELETE PRODUCT
@@ -629,13 +662,14 @@ public class MedEService {
 
                 StoreDTO storeDTO = new StoreDTO();
                 storeDTO.setStoreId(urm.getStore_id());
-                storeDTO.setStoreName(urm.getStore_name());
+                storeDTO.setStoreName(urm.getStoreName());
                 storeDTO.setLicenseNumber(urm.getLicenseNumber());
                 storeDTO.setStatusId(urm.getStatus_id());
                 storeDTO.setRegistrationDate(urm.getCreated_at());
                 storeDTO.setStatusUpdateDate(urm.getStatusUpdate_at());
                 storeDTO.setPhoneNumber(urm.getPhone_number());
                 storeDTO.setStorePassword(urm.getPassword());
+                storeDTO.setAddress(urm.getAddress());
 
                 Optional<StatusModel> statusModelOptional=statusRepo.findById(urm.getStatus_id());
                 if(statusModelOptional.isPresent()){
@@ -656,7 +690,7 @@ public class MedEService {
         Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(storeId);
         if (storeRegistrationModelOptional.isPresent()){
             StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
-            storeRegistrationModel.setStore_name(storeName);
+            storeRegistrationModel.setStoreName(storeName);
             storeRegistrationModel.setPassword(password);
             storeRegistrationModel.setPhone_number(phoneNumber);
 
@@ -732,14 +766,37 @@ private SmsService smsService;  // To send SMS notifications
 
     // ACCEPT PRESCRIPTION
 
-    public ResponseEntity<?> acceptPrescription(Integer prescriptionId) {
-        PrescriptionModel prescription = prescriptionRepo.findById(prescriptionId)
-                .orElseThrow(() -> new RuntimeException("Prescription not found"));
-        prescription.setStatus("Accepted");
-        PrescriptionModel updatedPrescription = prescriptionRepo.save(prescription);
-        String message = "Dear user, your prescription is Accepted ";
-        smsService.sendSms("+919567954754", message);  // for India
+    public ResponseEntity<?> acceptPrescription(Integer prescriptionId, Integer storeId) {
+        Optional<StoreRegistrationModel> storeRegistrationModel = storeRegistrationRepo.findById(storeId);
+        if (storeRegistrationModel.isPresent()) {
+            PrescriptionModel prescription = prescriptionRepo.findById(prescriptionId)
+                    .orElseThrow(() -> new RuntimeException("Prescription not found"));
+            prescription.setStatus("Accepted");
+            PrescriptionModel updatedPrescription = prescriptionRepo.save(prescription);
+            String message = "Dear user, your prescription is Accepted ";
+            smsService.sendSms("+919567954754", message);  // for India
 
-        return new ResponseEntity<>(updatedPrescription, HttpStatus.OK);
+            return new ResponseEntity<>(updatedPrescription, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("no prescription for store",HttpStatus.NOT_FOUND);
     }
+
+    // STORE ADD LOCATION ( UPDATE STORE TABLE )
+
+    public ResponseEntity<?> addStoreLocation(Integer storeId, Double longitude, Double latitude, String address) {
+        Optional<StoreRegistrationModel> storeOptional = storeRegistrationRepo.findById(storeId);
+
+        if (storeOptional.isPresent()){
+            StoreRegistrationModel store = storeOptional.get();
+            store.setLatitude(latitude);
+            store.setLongitude(longitude);
+            store.setAddress(address);
+            storeRegistrationRepo.save(store);
+            return new ResponseEntity<>("Location Added successfully ",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("location Adding Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+
 }

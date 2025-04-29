@@ -16,8 +16,8 @@ public class StoreRegistrationModel {
     @Column(name = "store_id")
     private Integer store_id;
 
-    @Column(name = "store_name")
-    private String store_name;
+    @Column(name = "storeName")
+    private String storeName;
 
     @Column(name = "licenseNumber")
     private String licenseNumber;
@@ -47,6 +47,9 @@ public class StoreRegistrationModel {
     @Column(name = "latitude")
     private Double latitude;
 
+    @Column(name = "address")
+    private String address;
+
     public StoreRegistrationModel() {
         this.status_id = 1;
     }
@@ -55,16 +58,24 @@ public class StoreRegistrationModel {
         return store_id;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public void setStore_id(Integer store_id) {
         this.store_id = store_id;
     }
 
-    public String getStore_name() {
-        return store_name;
+    public String getStoreName() {
+        return storeName;
     }
 
-    public void setStore_name(String store_name) {
-        this.store_name = store_name;
+    public void setStoreName(String storeName) {
+        this.storeName = storeName;
     }
 
     public String getLicenseNumber() {
