@@ -61,7 +61,9 @@ public class MedEService {
     public ResponseEntity<?> userLogin(UserLoginDto userLoginDto) {
         Optional<UserRegistrationModel>userRegistrationModelOptional=userRegistrationRepo.findByEmailAndPassword(userLoginDto.getEmail(), userLoginDto.getPassword());
         if(userRegistrationModelOptional.isPresent()){
-            return new ResponseEntity<>("login success",HttpStatus.OK);
+            UserLoginDto userLoginDto1 = new UserLoginDto();
+            userLoginDto1.setUser_id(userRegistrationModelOptional.get().getUser_id());
+            return new ResponseEntity<>(userLoginDto1,HttpStatus.OK);
         }
         return new ResponseEntity<>("email and password not match",HttpStatus.NOT_FOUND);
     }
@@ -197,9 +199,28 @@ public class MedEService {
 
 
     // USER FIND NEARBY STORE
+//    public ResponseEntity<?> findNearbyStores(Double latitude, Double longitude) {
+//        List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
+//        List<StoreRegistrationModel> nearbyStores = new ArrayList<>();
+//
+//        double fixedRadius = 5.0;
+//        for(StoreRegistrationModel store: allStores){
+//
+//            if (store.getLatitude() == null || store.getLongitude() == null) {
+//                continue;
+//            }
+//
+//            double distance = calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude());
+//
+//            if (distance <= fixedRadius) {
+//                nearbyStores.add(store);
+//            }
+//        }
+//        return new ResponseEntity<>(nearbyStores,HttpStatus.OK);
+//    }
     public ResponseEntity<?> findNearbyStores(Double latitude, Double longitude) {
         List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
-        List<StoreRegistrationModel> nearbyStores = new ArrayList<>();
+        List<nearbyStoreDto> nearbyStores = new ArrayList<>();
 
         double fixedRadius = 5.0;
         for(StoreRegistrationModel store: allStores){
@@ -211,7 +232,21 @@ public class MedEService {
             double distance = calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude());
 
             if (distance <= fixedRadius) {
-                nearbyStores.add(store);
+                Double avgRating = feedBackRepo.findAverageRatingByStoreId(store.getStore_id());
+                if (avgRating == null) {
+                    avgRating = 0.0;
+                }
+                nearbyStoreDto dto = new nearbyStoreDto();
+                dto.setAverageRating(avgRating);
+                dto.setLatitude(store.getLatitude());
+                dto.setLongitude(store.getLongitude());
+                dto.setAddress(store.getAddress());
+                dto.setStoreName(store.getStoreName());
+                dto.setPhoneNumber(store.getPhone_number());
+                dto.setStoreId(store.getStore_id());
+                dto.setLicenseNumber(store.getLicenseNumber());
+
+                nearbyStores.add(dto);
             }
         }
         return new ResponseEntity<>(nearbyStores,HttpStatus.OK);
@@ -230,9 +265,7 @@ public class MedEService {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        double distance = R * c;
-
-        return distance;
+        return R * c;
     }
 
 
@@ -397,6 +430,16 @@ public class MedEService {
         categoryModel1.setCategoryName(categoryModel.getCategoryName());
         categoryRepo.save(categoryModel1);
         return new ResponseEntity<>("Category Added Successfully",HttpStatus.CREATED);
+    }
+
+    // ADMIN FETCH ALL ADS
+
+    public ResponseEntity<?> adminFetchAds() {
+        List<AdsModel> adsModelList=adsRepo.findAll();
+        if (!adsModelList.isEmpty()){
+            return new ResponseEntity<>(adsModelList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
 
 
@@ -709,6 +752,8 @@ public class MedEService {
         }
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
+
+
 
     // STORE DELETE ADS
 

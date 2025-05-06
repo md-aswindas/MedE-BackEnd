@@ -247,6 +247,18 @@ public class MedEController {
         } return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // ADMIN FETCH ALL ADS
+
+    @GetMapping(path= "Admin/fetchAds")
+    public ResponseEntity<?>adminFetchAds(){
+        try{
+            return medEService.adminFetchAds();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
                             // STORE
 
 
@@ -458,6 +470,8 @@ public class MedEController {
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 
     // STORE DELETE ADS
 
