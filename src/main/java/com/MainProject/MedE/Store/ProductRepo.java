@@ -17,4 +17,10 @@ public interface ProductRepo extends JpaRepository<ProductModel,Integer> {
     Optional<ProductModel> findByProductName(String productName);
 
     List<ProductModel> findByStoreIdAndProductNameContainingIgnoreCase(Integer storeId, String productName);
+
+    List<ProductModel> findByProductNameContainingIgnoreCaseAndStoreId(String productName, Integer storeId);
+
+
+
+    List<ProductModel> findAllByProductIdIn(List<Long> productIds);
 }

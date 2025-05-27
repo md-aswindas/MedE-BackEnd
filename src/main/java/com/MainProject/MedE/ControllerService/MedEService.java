@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,6 +65,7 @@ public class MedEService {
         if(userRegistrationModelOptional.isPresent()){
             UserLoginDto userLoginDto1 = new UserLoginDto();
             userLoginDto1.setUser_id(userRegistrationModelOptional.get().getUser_id());
+            userLoginDto1.setUserName(userRegistrationModelOptional.get().getName());
             return new ResponseEntity<>(userLoginDto1,HttpStatus.OK);
         }
         return new ResponseEntity<>("email and password not match",HttpStatus.NOT_FOUND);
@@ -124,11 +127,13 @@ public class MedEService {
 
     // SEARCH PRODUCT
 
-    public ResponseEntity<?> searchProduct(String productName) {
-        List<ProductModel> products = productRepo.findByProductNameContainingIgnoreCase(productName);
+    public ResponseEntity<?> searchProduct(String productName, Integer storeId) {
+
+
+        List<ProductModel> products = productRepo.findByProductNameContainingIgnoreCaseAndStoreId(productName,storeId);
         if (products.isEmpty()){
             return new ResponseEntity<>("not found ",HttpStatus.NOT_FOUND);
-        }return new ResponseEntity<>("item found",HttpStatus.FOUND);
+        }return new ResponseEntity<>(products,HttpStatus.OK);
     }
 
     // SEARCH STORE
@@ -199,6 +204,7 @@ public class MedEService {
 
 
     // USER FIND NEARBY STORE
+
 //    public ResponseEntity<?> findNearbyStores(Double latitude, Double longitude) {
 //        List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
 //        List<StoreRegistrationModel> nearbyStores = new ArrayList<>();
@@ -218,6 +224,9 @@ public class MedEService {
 //        }
 //        return new ResponseEntity<>(nearbyStores,HttpStatus.OK);
 //    }
+
+    // FIND NEARBY STORE
+
     public ResponseEntity<?> findNearbyStores(Double latitude, Double longitude) {
         List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
         List<nearbyStoreDto> nearbyStores = new ArrayList<>();
@@ -253,6 +262,7 @@ public class MedEService {
     }
 
     // distance calculate method
+
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371; // Radius of the earth in KM
 
@@ -267,6 +277,78 @@ public class MedEService {
 
         return R * c;
     }
+
+    // ADD TO CART
+
+    @Autowired
+    private CartItemRepo cartItemRepo;
+
+    @Autowired
+    private CartRepo cartRepo;
+
+    public void addProductCart(CartItemDTO cartItemDTO) {
+        CartModel cart = cartRepo.findByUserId(cartItemDTO.getUserId())
+                .orElseGet(() -> {
+                    CartModel newCart = new CartModel();
+                    newCart.setUserId(cartItemDTO.getUserId());
+                    return cartRepo.save(newCart);
+                });
+
+        // Check if item already exists
+        CartItem existingItem = cart.getCartItems().stream()
+                .filter(item -> item.getProductId().equals(cartItemDTO.getProductId()))
+                .findFirst()
+                .orElse(null);
+
+        if (existingItem != null) {
+            existingItem.setQuantity(existingItem.getQuantity() + cartItemDTO.getQuantity());
+        } else {
+            CartItem newItem = new CartItem();
+            newItem.setProductId(cartItemDTO.getProductId());
+            newItem.setQuantity(cartItemDTO.getQuantity());
+            newItem.setCart(cart);
+            cart.getCartItems().add(newItem);
+        }
+
+        cartRepo.save(cart); // cascade saves items
+
+    }
+
+    // GET CART ITEM
+
+    public ResponseEntity<?> getCart(Long userId) {
+        Optional<CartModel> optionalCart = cartRepo.findByUserId(userId);
+
+        if (!optionalCart.isPresent()) {
+            return new ResponseEntity<>("Cart not found", HttpStatus.NOT_FOUND);
+        }
+
+        CartModel cart = optionalCart.get();
+        List<CartItem> cartItems = cart.getCartItems();
+
+        // Extract productIds from cart items
+        List<Long> productIds = cartItems.stream()
+                .map(CartItem::getProductId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Fetch all products by these IDs in one query
+        List<ProductModel> products = productRepo.findAllByProductIdIn(productIds);
+
+        // Map productId -> ProductModel for quick lookup
+        Map<Long, ProductModel> productMap = products.stream()
+                .collect(Collectors.toMap(p -> p.getProductId().longValue(), p -> p));
+
+        // Build list of CartItemWithProductDTO
+        List<CartItemWithProductDTO> itemsWithProduct = cartItems.stream()
+                .map(item -> new CartItemWithProductDTO(item, productMap.get(item.getProductId())))
+                .collect(Collectors.toList());
+
+        CartResponseDTO responseDTO = new CartResponseDTO(cart, itemsWithProduct);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
 
 
     // ADMIN
@@ -318,6 +400,7 @@ public class MedEService {
             for(StoreRegistrationModel urm : storeRegistrationModelList){
 
                 StoreDTO storeDTO = new StoreDTO();
+                
                 storeDTO.setStoreId(urm.getStore_id());
                 storeDTO.setStoreName(urm.getStoreName());
                 storeDTO.setLicenseNumber(urm.getLicenseNumber());
@@ -385,6 +468,46 @@ public class MedEService {
                 adminViewProductDTO.setStockCount(pdm.getStock());
                 adminViewProductDTO.setExpiryDate(pdm.getExpiryDate());
                 adminViewProductDTO.setProductDescription(pdm.getProductDesc());
+                adminViewProductDTO.setProductImage(pdm.getProductImage());
+
+                Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
+                Optional<CategoryModel> categoryModelOptional = categoryRepo.findById(pdm.getCategoryId());
+
+                if(storeRegistrationModelOptional.isPresent()){
+                    StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
+                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStoreName());
+                }
+                if (categoryModelOptional.isPresent()){
+                    CategoryModel categoryModel = categoryModelOptional.get();
+                    adminViewProductDTO.setCategoryName(categoryModel.getCategoryName());
+                }
+
+                adminViewProductDTOList.add(adminViewProductDTO);
+            }
+            return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.NOT_FOUND);
+    }
+
+    // VIEW STORE PRODUCT
+
+    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId) {
+        List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
+        List<ProductModel> productModelList = productRepo.findAllByStoreId(storeId);
+
+        if(!productModelList.isEmpty()){
+            for (ProductModel pdm : productModelList){
+                AdminViewProductDTO adminViewProductDTO = new AdminViewProductDTO();
+                adminViewProductDTO.setStoreId(pdm.getStoreId());
+                adminViewProductDTO.setProductId(pdm.getProductId());
+                adminViewProductDTO.setProductName(pdm.getProductName());
+                adminViewProductDTO.setActualPrice(pdm.getActualPrice());
+                adminViewProductDTO.setOfferPercentage(pdm.getOfferPercentage());
+                adminViewProductDTO.setFinalDiscountPrice(pdm.getDiscountPrice());
+                adminViewProductDTO.setStockCount(pdm.getStock());
+                adminViewProductDTO.setExpiryDate(pdm.getExpiryDate());
+                adminViewProductDTO.setProductDescription(pdm.getProductDesc());
+                adminViewProductDTO.setProductImage(pdm.getProductImage());
 
                 Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
                 Optional<CategoryModel> categoryModelOptional = categoryRepo.findById(pdm.getCategoryId());

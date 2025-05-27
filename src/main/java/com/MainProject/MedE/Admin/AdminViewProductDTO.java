@@ -21,6 +21,7 @@ public class AdminViewProductDTO {
     private Integer categoryId;
     private String categoryName;
     private LocalDate expiryDate;
+    private byte[] productImage;
 
     public Integer getStoreId() {
         return storeId;
@@ -116,5 +117,13 @@ public class AdminViewProductDTO {
 
     public void setExpiryDate(LocalDate expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public byte[] getProductImage() {
+        return productImage;
+    }
+
+    public void setProductImage(byte[] productImage) {
+        this.productImage = productImage;
     }
 }

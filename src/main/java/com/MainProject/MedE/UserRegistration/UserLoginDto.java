@@ -12,6 +12,15 @@ public class UserLoginDto {
     private String email;
     private String password;
     private Integer user_id;
+    private String userName;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
     public void setEmail(String email) {
         this.email = email;

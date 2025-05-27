@@ -114,8 +114,8 @@ public class MedEController {
     // USER SEARCH PRODUCT
 
     @GetMapping(path = "User/searchProduct")
-   public ResponseEntity<?> searchProduct(@RequestParam String productName){
-        return medEService.searchProduct(productName);
+   public ResponseEntity<?> searchProduct(@RequestParam String productName, @RequestParam Integer storeId){
+        return medEService.searchProduct(productName,storeId);
     }
 
     // USER SEARCH STORE
@@ -144,6 +144,30 @@ public class MedEController {
         }
     }
 
+    // USER ADD PRODUCT TO CART
+
+    @PostMapping("User/addCart")
+    public ResponseEntity<?> addProductCart(@RequestBody CartItemDTO cartItemDTO) {
+        try {
+            medEService.addProductCart(cartItemDTO);
+            return new ResponseEntity<>("Product added to cart successfully", HttpStatus.OK);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // USER GET CART ITEMS
+
+    @GetMapping("User/getCart")
+    public ResponseEntity<?> getCart(@RequestParam Long userId) {
+        try {
+            return medEService.getCart(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 
@@ -222,6 +246,12 @@ public class MedEController {
     @GetMapping(path = "Admin/adminViewAllProduct")
     public ResponseEntity<List<AdminViewProductDTO>>adminViewProductDTOMethod(){
         return medEService.adminViewProductsWithName();
+    }
+
+    // EACH STORE PRODUCT
+    @GetMapping(path = "Admin/adminViewStoreProduct")
+    public ResponseEntity<List<AdminViewProductDTO>>adminViewStoreProductDTOMethod(@RequestParam Integer storeId){
+        return medEService.adminViewStoreProductsWithName( storeId);
     }
 
     // CREATE CATEGORY
