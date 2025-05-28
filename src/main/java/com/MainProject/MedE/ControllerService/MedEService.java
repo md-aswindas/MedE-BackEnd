@@ -351,17 +351,54 @@ public class MedEService {
 
     // USER DELETE CART ITEM
 
-    public ResponseEntity<?> deleteCartProduct(Long itemId) {
+    public ResponseEntity<?> deleteCartProduct(Long itemId, Long userId) {
         Optional<CartItem> cartItemOptional = cartItemRepo.findById(itemId);
 
         if (cartItemOptional.isPresent()) {
-            cartItemRepo.deleteById(itemId);
-            return new ResponseEntity<>("Cart item deleted successfully", HttpStatus.OK);
+            CartItem cartItem = cartItemOptional.get();
+
+            if (cartItem.getCart() != null && cartItem.getCart().getUserId().equals(userId)) {
+                cartItemRepo.deleteById(itemId);
+                return new ResponseEntity<>("Cart item deleted successfully", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Unauthorized or mismatched user", HttpStatus.UNAUTHORIZED);
+            }
         } else {
             return new ResponseEntity<>("Cart item not found", HttpStatus.NOT_FOUND);
         }
     }
 
+    // USER GET PRODUCT DETAILS
+
+    public ResponseEntity<?> getProductDetails(Integer productId, Integer storeId) {
+        Optional<ProductModel> productOpt = productRepo.findByProductIdAndStoreId(productId, storeId);
+
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found for given store");
+        }
+
+        ProductModel product = productOpt.get();
+        ProductDetailsDto dto = new ProductDetailsDto();
+
+        dto.setProductId(product.getProductId());
+        dto.setProductName(product.getProductName());
+        dto.setActualPrice(product.getActualPrice());
+        dto.setDiscountPrice(product.getDiscountPrice());
+        dto.setOfferPercentage(product.getOfferPercentage());
+        dto.setStockCount(product.getStock());
+        dto.setProductDescription(product.getProductDesc());
+        dto.setExpiryDate(product.getExpiryDate());
+        dto.setProductImage(product.getProductImage());
+
+        // 🔍 Manually fetch store name
+        storeRegistrationRepo.findById(storeId).ifPresent(store -> dto.setStoreName(store.getStoreName()));
+
+        // 🔍 Manually fetch category name using categoryId from product
+        Integer categoryId = product.getCategoryId(); // Assuming you store categoryId directly
+        categoryRepo.findById(categoryId).ifPresent(category -> dto.setCategoryName(category.getCategoryName()));
+
+        return ResponseEntity.ok(dto);
+    }
 
 
 

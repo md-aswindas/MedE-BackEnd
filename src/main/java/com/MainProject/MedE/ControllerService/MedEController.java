@@ -172,13 +172,20 @@ public class MedEController {
     // USER DELETE CART ITEM
 
     @DeleteMapping(path = "User/deleteCartProduct")
-    public ResponseEntity<?> deleteCartProductMethod(@RequestParam Long itemId) {
+    public ResponseEntity<?> deleteCartProductMethod(@RequestParam Long itemId, @RequestParam Long userId) {
         try {
-            return medEService.deleteCartProduct(itemId);
+            return medEService.deleteCartProduct(itemId,userId);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Cart item delete failed", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // USER GET PRODUCT DETAILS
+
+    @GetMapping(path = "User/getProductDetails")
+    public ResponseEntity<?> getProductById(@RequestParam Integer productId, @RequestParam Integer storeId) {
+        return  medEService.getProductDetails(productId,storeId);
     }
 
 
