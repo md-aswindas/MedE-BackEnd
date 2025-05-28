@@ -349,6 +349,20 @@ public class MedEService {
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
+    // USER DELETE CART ITEM
+
+    public ResponseEntity<?> deleteCartProduct(Long itemId) {
+        Optional<CartItem> cartItemOptional = cartItemRepo.findById(itemId);
+
+        if (cartItemOptional.isPresent()) {
+            cartItemRepo.deleteById(itemId);
+            return new ResponseEntity<>("Cart item deleted successfully", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Cart item not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
 
 
     // ADMIN

@@ -169,6 +169,18 @@ public class MedEController {
         }
     }
 
+    // USER DELETE CART ITEM
+
+    @DeleteMapping(path = "User/deleteCartProduct")
+    public ResponseEntity<?> deleteCartProductMethod(@RequestParam Long itemId) {
+        try {
+            return medEService.deleteCartProduct(itemId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Cart item delete failed", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
     // A D M I N
