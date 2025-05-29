@@ -25,4 +25,9 @@ public interface ProductRepo extends JpaRepository<ProductModel,Integer> {
     List<ProductModel> findAllByProductIdIn(List<Long> productIds);
 
     Optional<ProductModel> findByProductIdAndStoreId(Integer productId, Integer storeId);
+
+
+    List<ProductModel> findByStoreIdOrderByDiscountPriceDesc(Integer storeId);
+
+    List<ProductModel> findByStoreIdOrderByDiscountPriceAsc(Integer storeId);
 }

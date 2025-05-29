@@ -14,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -501,6 +498,24 @@ public class MedEService {
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
 
+    // Ascending order by actual price
+    public ResponseEntity<?> getProductsSortedAsc(Integer storeId) {
+        List<ProductModel> sortedList = productRepo.findByStoreIdOrderByDiscountPriceAsc(storeId);
+        if (!sortedList.isEmpty()) {
+            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+    }
+
+    // Descending order by actual price
+    public ResponseEntity<?> getProductsSortedDesc(Integer storeId) {
+        List<ProductModel> sortedList = productRepo.findByStoreIdOrderByDiscountPriceDesc(storeId);
+        if (!sortedList.isEmpty()) {
+            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+    }
+
     // ADMIN VIEW ALL PRODUCTS WITH STORE NAME
 
     public ResponseEntity<List<AdminViewProductDTO>> adminViewProductsWithName() {
@@ -542,12 +557,51 @@ public class MedEService {
 
     // VIEW STORE PRODUCT
 
-    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId) {
+//    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId) {
+//        List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
+//        List<ProductModel> productModelList = productRepo.findAllByStoreId(storeId);
+//
+//        if(!productModelList.isEmpty()){
+//            for (ProductModel pdm : productModelList){
+//                AdminViewProductDTO adminViewProductDTO = new AdminViewProductDTO();
+//                adminViewProductDTO.setStoreId(pdm.getStoreId());
+//                adminViewProductDTO.setProductId(pdm.getProductId());
+//                adminViewProductDTO.setProductName(pdm.getProductName());
+//                adminViewProductDTO.setActualPrice(pdm.getActualPrice());
+//                adminViewProductDTO.setOfferPercentage(pdm.getOfferPercentage());
+//                adminViewProductDTO.setFinalDiscountPrice(pdm.getDiscountPrice());
+//                adminViewProductDTO.setStockCount(pdm.getStock());
+//                adminViewProductDTO.setExpiryDate(pdm.getExpiryDate());
+//                adminViewProductDTO.setProductDescription(pdm.getProductDesc());
+//                adminViewProductDTO.setProductImage(pdm.getProductImage());
+//
+//                Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
+//                Optional<CategoryModel> categoryModelOptional = categoryRepo.findById(pdm.getCategoryId());
+//
+//                if(storeRegistrationModelOptional.isPresent()){
+//                    StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
+//                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStoreName());
+//                }
+//                if (categoryModelOptional.isPresent()){
+//                    CategoryModel categoryModel = categoryModelOptional.get();
+//                    adminViewProductDTO.setCategoryName(categoryModel.getCategoryName());
+//                }
+//
+//                adminViewProductDTOList.add(adminViewProductDTO);
+//            }
+//            return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.NOT_FOUND);
+//    }
+
+
+
+    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId, String sort) {
         List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
         List<ProductModel> productModelList = productRepo.findAllByStoreId(storeId);
 
-        if(!productModelList.isEmpty()){
-            for (ProductModel pdm : productModelList){
+        if (!productModelList.isEmpty()) {
+            for (ProductModel pdm : productModelList) {
                 AdminViewProductDTO adminViewProductDTO = new AdminViewProductDTO();
                 adminViewProductDTO.setStoreId(pdm.getStoreId());
                 adminViewProductDTO.setProductId(pdm.getProductId());
@@ -560,24 +614,30 @@ public class MedEService {
                 adminViewProductDTO.setProductDescription(pdm.getProductDesc());
                 adminViewProductDTO.setProductImage(pdm.getProductImage());
 
-                Optional<StoreRegistrationModel> storeRegistrationModelOptional = storeRegistrationRepo.findById(pdm.getStoreId());
-                Optional<CategoryModel> categoryModelOptional = categoryRepo.findById(pdm.getCategoryId());
+                storeRegistrationRepo.findById(pdm.getStoreId()).ifPresent(store ->
+                        adminViewProductDTO.setStoreName(store.getStoreName())
+                );
 
-                if(storeRegistrationModelOptional.isPresent()){
-                    StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
-                    adminViewProductDTO.setStoreName(storeRegistrationModel.getStoreName());
-                }
-                if (categoryModelOptional.isPresent()){
-                    CategoryModel categoryModel = categoryModelOptional.get();
-                    adminViewProductDTO.setCategoryName(categoryModel.getCategoryName());
-                }
+                categoryRepo.findById(pdm.getCategoryId()).ifPresent(category ->
+                        adminViewProductDTO.setCategoryName(category.getCategoryName())
+                );
 
                 adminViewProductDTOList.add(adminViewProductDTO);
             }
-            return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.OK);
+
+            // ✅ Sorting logic
+            if ("asc".equalsIgnoreCase(sort)) {
+                adminViewProductDTOList.sort(Comparator.comparing(AdminViewProductDTO::getFinalDiscountPrice));
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                adminViewProductDTOList.sort(Comparator.comparing(AdminViewProductDTO::getFinalDiscountPrice).reversed());
+            }
+
+            return new ResponseEntity<>(adminViewProductDTOList, HttpStatus.OK);
         }
-        return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(adminViewProductDTOList, HttpStatus.NOT_FOUND);
     }
+
 
 
     // ADMIN CREATE CATEGORY

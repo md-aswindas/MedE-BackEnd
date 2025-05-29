@@ -250,10 +250,26 @@ public class MedEController {
     // ADMIN (VIEW PRODUCTS OF SINGLE STORE)
 
 
+//    @GetMapping(path = "Admin/AdminViewStoreProducts")
+//    public ResponseEntity<?>adminViewStoreProductsMethod(@RequestParam Integer storeId){
+//        try{
+//            return medEService.adminViewStoreProduct(storeId);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
     @GetMapping(path = "Admin/AdminViewStoreProducts")
-    public ResponseEntity<?>adminViewStoreProductsMethod(@RequestParam Integer storeId){
-        try{
-            return medEService.adminViewStoreProduct(storeId);
+    public ResponseEntity<?>adminViewStoreProductsMethod(@RequestParam Integer storeId, @RequestParam(required = false) String sort){
+        try {
+            if ("asc".equalsIgnoreCase(sort)) {
+                return medEService.getProductsSortedAsc(storeId); // ✅ Return result
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                return medEService.getProductsSortedDesc(storeId); // ✅ Return result
+            } else {
+                return medEService.adminViewStoreProduct(storeId); // ✅ Return result
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -267,10 +283,22 @@ public class MedEController {
         return medEService.adminViewProductsWithName();
     }
 
-    // EACH STORE PRODUCT
-    @GetMapping(path = "Admin/adminViewStoreProduct")
-    public ResponseEntity<List<AdminViewProductDTO>>adminViewStoreProductDTOMethod(@RequestParam Integer storeId){
-        return medEService.adminViewStoreProductsWithName( storeId);
+    // EACH STORE PRODUCT (fetch  store products : )
+
+//    @GetMapping(path = "Admin/adminViewStoreProduct")
+//    public ResponseEntity<List<AdminViewProductDTO>>adminViewStoreProductDTOMethod(@RequestParam Integer storeId){
+//        return medEService.adminViewStoreProductsWithName( storeId);
+//    }
+
+    @GetMapping("/Admin/adminViewStoreProduct")
+    public ResponseEntity<?> adminViewStoreProductDTOMethod(@RequestParam Integer storeId,
+                                                          @RequestParam(required = false) String sort) {
+        try {
+            return medEService.adminViewStoreProductsWithName(storeId, sort);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     // CREATE CATEGORY
