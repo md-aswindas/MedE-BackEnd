@@ -596,9 +596,15 @@ public class MedEService {
 
 
 
-    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId, String sort) {
+    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId, String sort, Integer categoryId) {
         List<AdminViewProductDTO> adminViewProductDTOList = new ArrayList<>();
         List<ProductModel> productModelList = productRepo.findAllByStoreId(storeId);
+
+        if (categoryId != null) {
+            productModelList = productModelList.stream()
+                    .filter(product -> product.getCategoryId().equals(categoryId))
+                    .collect(Collectors.toList());
+        }
 
         if (!productModelList.isEmpty()) {
             for (ProductModel pdm : productModelList) {
@@ -613,6 +619,7 @@ public class MedEService {
                 adminViewProductDTO.setExpiryDate(pdm.getExpiryDate());
                 adminViewProductDTO.setProductDescription(pdm.getProductDesc());
                 adminViewProductDTO.setProductImage(pdm.getProductImage());
+
 
                 storeRegistrationRepo.findById(pdm.getStoreId()).ifPresent(store ->
                         adminViewProductDTO.setStoreName(store.getStoreName())

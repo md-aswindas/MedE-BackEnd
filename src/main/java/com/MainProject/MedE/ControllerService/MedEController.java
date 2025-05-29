@@ -292,9 +292,10 @@ public class MedEController {
 
     @GetMapping("/Admin/adminViewStoreProduct")
     public ResponseEntity<?> adminViewStoreProductDTOMethod(@RequestParam Integer storeId,
-                                                          @RequestParam(required = false) String sort) {
+                                                          @RequestParam(required = false) String sort,
+                                                            @RequestParam(required = false) Integer categoryId) {
         try {
-            return medEService.adminViewStoreProductsWithName(storeId, sort);
+            return medEService.adminViewStoreProductsWithName(storeId, sort, categoryId);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
