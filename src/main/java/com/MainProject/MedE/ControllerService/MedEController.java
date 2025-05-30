@@ -5,22 +5,17 @@ import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.*;
 
+import com.MainProject.MedE.UserRegistration.CartItemDTO;
 import com.MainProject.MedE.UserRegistration.PrescriptionModel;
 import com.MainProject.MedE.UserRegistration.UserLoginDto;
 import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.origin.Origin;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin
 @RestController

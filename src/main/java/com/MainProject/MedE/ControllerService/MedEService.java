@@ -284,6 +284,18 @@ public class MedEService {
     private CartRepo cartRepo;
 
     public void addProductCart(CartItemDTO cartItemDTO) {
+
+        Long userId = cartItemDTO.getUserId();
+
+        // Step 1: Check if userId is null
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null.");
+        }
+
+        // Step 2: Check if user exists
+        if (!userRegistrationRepo.existsById(userId.intValue())) {
+            throw new IllegalArgumentException("User with ID " + userId + " does not exist.");
+        }
         CartModel cart = cartRepo.findByUserId(cartItemDTO.getUserId())
                 .orElseGet(() -> {
                     CartModel newCart = new CartModel();

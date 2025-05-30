@@ -1,5 +1,6 @@
-package com.MainProject.MedE.Store;
+package com.MainProject.MedE.UserRegistration;
 
+import com.MainProject.MedE.Store.ProductModel;
 import lombok.Data;
 
 @Data

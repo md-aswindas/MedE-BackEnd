@@ -1,4 +1,4 @@
-package com.MainProject.MedE.Store;
+package com.MainProject.MedE.UserRegistration;
 
 import lombok.Data;
 
