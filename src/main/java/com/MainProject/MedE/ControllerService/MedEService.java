@@ -1,9 +1,6 @@
 package com.MainProject.MedE.ControllerService;
 
-import com.MainProject.MedE.Admin.AdminLoginDto;
-import com.MainProject.MedE.Admin.AdminModel;
-import com.MainProject.MedE.Admin.AdminRepo;
-import com.MainProject.MedE.Admin.AdminViewProductDTO;
+import com.MainProject.MedE.Admin.*;
 import com.MainProject.MedE.Store.*;
 import com.MainProject.MedE.UserRegistration.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1006,6 +1003,33 @@ public class MedEService {
         return new ResponseEntity<>(feedbackList, HttpStatus.OK);
     }
 
+    public ResponseEntity<?> findTopStores() {
+        List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
+        List<AllStoreDTO> allStoreDTOList = new ArrayList<>();
+
+
+        for(StoreRegistrationModel store: allStores){
+
+                Double avgRating = feedBackRepo.findAverageRatingByStoreId(store.getStore_id());
+                if (avgRating == null) {
+                    avgRating = 0.0;
+                }
+                AllStoreDTO dto = new AllStoreDTO();
+                dto.setAverageRating(avgRating);
+                dto.setLatitude(store.getLatitude());
+                dto.setLongitude(store.getLongitude());
+                dto.setAddress(store.getAddress());
+                dto.setStoreName(store.getStoreName());
+                dto.setPhoneNumber(store.getPhone_number());
+                dto.setStoreId(store.getStore_id());
+                dto.setLicenseNumber(store.getLicenseNumber());
+                dto.setCreated(store.getCreated_at());
+
+                allStoreDTOList.add(dto);
+            }
+
+        return new ResponseEntity<>(allStoreDTOList,HttpStatus.OK);
+    }
 
 
 

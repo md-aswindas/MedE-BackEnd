@@ -416,6 +416,18 @@ public class MedEController {
         }
     }
 
+    //STORE FULL DETAIL
+
+    @GetMapping("Admin/findTopStores")
+    public ResponseEntity<?> findTopStores() {
+        try {
+            return medEService.findTopStores();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // STORE
 
 
