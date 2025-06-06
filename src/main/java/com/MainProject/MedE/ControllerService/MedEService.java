@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,6 +122,51 @@ public class MedEService {
         }
         return new ResponseEntity<>("store not found",HttpStatus.NOT_FOUND);
     }
+
+    //USER FETCH PRESCRIPTION
+    public ResponseEntity<?> fetchUserPrescriptions(Long userId) {
+        List<PrescriptionModel> prescriptions = prescriptionRepo.findByUserId(userId);
+        return ResponseEntity.ok(prescriptions);
+    }
+
+    //USER DELETE PRESCRIPTION
+    @Transactional
+    public String deletePrescriptionByUser(Long userId, Long prescriptionId) {
+        Optional<PrescriptionModel> optionalPrescription = prescriptionRepo.findById(prescriptionId.intValue());
+
+        if (optionalPrescription.isEmpty()) {
+            throw new RuntimeException("Prescription not found");
+        }
+
+        PrescriptionModel prescription = optionalPrescription.get();
+
+        if (!(prescription.getUser_id().longValue() == userId)) {
+            throw new RuntimeException("Unauthorized: Prescription does not belong to this user");
+        }
+
+        prescriptionRepo.deleteById(prescriptionId.intValue());
+        return "Prescription deleted successfully";
+    }
+
+    // FETCH PROFILE
+    public ResponseEntity<?> fetchProfile(Integer userId) {
+        Optional<UserRegistrationModel> userOptional = userRegistrationRepo.findByUserId(userId);
+        try {
+
+            if (userOptional.isPresent()) {
+                return ResponseEntity.ok(userOptional);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("User not found with ID: " + userId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching user details");
+        }
+    }
+
+
 
     // SEARCH PRODUCT
 
@@ -283,27 +329,50 @@ public class MedEService {
     @Autowired
     private CartRepo cartRepo;
 
-    public void addProductCart(CartItemDTO cartItemDTO) {
 
+    public MedEService(ProductRepo productRepo, CartItemRepo cartItemRepo) {
+        this.productRepo = productRepo;
+        this.cartItemRepo = cartItemRepo;
+    }
+
+    // ADD PRODUCT TO CART (NOW USING)
+
+    public void addProductCart(CartItemDTO cartItemDTO) {
         Long userId = cartItemDTO.getUserId();
 
-        // Step 1: Check if userId is null
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null.");
         }
 
-        // Step 2: Check if user exists
         if (!userRegistrationRepo.existsById(userId.intValue())) {
             throw new IllegalArgumentException("User with ID " + userId + " does not exist.");
         }
-        CartModel cart = cartRepo.findByUserId(cartItemDTO.getUserId())
+
+        // Step 1: Get the storeId of the product being added
+        ProductModel product = productRepo.findById(cartItemDTO.getProductId().intValue())
+                .orElseThrow(() -> new IllegalArgumentException("Product does not exist."));
+        Long newProductStoreId = Long.valueOf(product.getStoreId());
+
+        CartModel cart = cartRepo.findByUserId(userId)
                 .orElseGet(() -> {
                     CartModel newCart = new CartModel();
-                    newCart.setUserId(cartItemDTO.getUserId());
+                    newCart.setUserId(userId);
                     return cartRepo.save(newCart);
                 });
 
-        // Check if item already exists
+        // Step 2: Check if cart contains products from a different store
+        if (!cart.getCartItems().isEmpty()) {
+            CartItem firstItem = cart.getCartItems().get(0); // get any item
+            ProductModel existingProduct = productRepo.findById(firstItem.getProductId().intValue())
+                    .orElseThrow(() -> new IllegalArgumentException("Existing product not found in cart."));
+            Long existingStoreId = Long.valueOf(existingProduct.getStoreId());
+
+            if (!existingStoreId.equals(newProductStoreId)) {
+                throw new IllegalArgumentException("Cart already contains products from a different store.");
+            }
+        }
+
+        // Step 3: Add or update the item
         CartItem existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getProductId().equals(cartItemDTO.getProductId()))
                 .findFirst()
@@ -320,8 +389,72 @@ public class MedEService {
         }
 
         cartRepo.save(cart); // cascade saves items
-
     }
+
+
+    private String convertImageToBase64(byte[] imageData) {
+        if (imageData == null || imageData.length == 0) return null;
+        return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imageData);
+    }
+
+
+    // UPDATED VIEW CART (NOW USING)
+
+
+    public CartResponse getCartForUser(Long userId) {
+        CartModel cart = cartRepo.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found."));
+
+        List<CartProductDTO> cartItems = new ArrayList<>();
+        double totalPrice = 0;
+        double totalDiscount = 0;
+
+        for (CartItem item : cart.getCartItems()) {
+            ProductModel product = productRepo.findById(item.getProductId().intValue())
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found."));
+
+            CategoryModel category = categoryRepo.findById(product.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+
+            CartProductDTO dto = new CartProductDTO();
+
+            dto.setItemId(item.getItemId());
+            dto.setProductId(product.getProductId().longValue());
+            dto.setName(product.getProductName());
+            dto.setDescription(product.getProductDesc());
+            dto.setCategoryId(product.getCategoryId());
+            dto.setCategory(category.getCategoryName());
+            dto.setActualPrice(product.getActualPrice());
+            dto.setDiscountPrice(product.getDiscountPrice());
+            dto.setDiscountPercentage(product.getOfferPercentage());
+            dto.setQuantity(item.getQuantity());
+            dto.setImageBase64(convertImageToBase64(product.getProductImage()));
+
+            totalPrice += product.getDiscountPrice() * item.getQuantity();
+            totalDiscount += (product.getActualPrice() - product.getDiscountPrice()) * item.getQuantity();
+
+            cartItems.add(dto);
+        }
+
+        ProductModel product = productRepo.findById(cart.getCartItems().get(0).getProductId().intValue())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
+
+        StoreRegistrationModel store = storeRegistrationRepo.findById(product.getStoreId())
+                .orElseThrow(() -> new IllegalArgumentException("Store not found."));
+
+        String storeName = store.getStoreName();  // or store.getStore_id() if you need the ID
+
+
+        CartResponse response = new CartResponse();
+        response.setItems(cartItems);
+        response.setTotalPrice(totalPrice);
+        response.setTotalDiscount(totalDiscount);
+        response.setStoreName(store.getStoreName());
+
+        return response;
+    }
+
+
 
     // GET CART ITEM
 
@@ -409,6 +542,173 @@ public class MedEService {
         return ResponseEntity.ok(dto);
     }
 
+
+    @Autowired
+    private OrderRepo orderRepo;
+
+    @Transactional
+    public ResponseEntity<?> checkoutCart(Long userId, CheckoutRequestDto checkoutRequest) {
+        // 1. Validate user
+        Optional<UserRegistrationModel> userOpt = userRegistrationRepo.findById(userId.intValue());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        // 2. Fetch cart
+        CartModel cart = cartRepo.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+
+        if (cart.getCartItems().isEmpty()) {
+            return ResponseEntity.badRequest().body("Cart is empty");
+        }
+
+        // 3. Validate store
+        ProductModel firstProduct = productRepo.findById(cart.getCartItems().get(0).getProductId().intValue())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        Integer storeId = firstProduct.getStoreId();
+
+        // 4. Prepare order
+        OrderModel order = new OrderModel();
+        order.setUserId(userId);
+        order.setStoreId(storeId);
+        order.setCustomerName(checkoutRequest.getCustomerName());
+        order.setPhoneNumber(checkoutRequest.getPhoneNumber());
+        order.setAddress(checkoutRequest.getAddress());
+        order.setPaymentMethod(checkoutRequest.getPaymentMethod());
+        order.setOrderDate(LocalDateTime.now());
+
+        double totalPrice = 0;
+        double totalDiscount = 0;
+
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for (CartItem item : cart.getCartItems()) {
+            ProductModel product = productRepo.findById(item.getProductId().intValue())
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProductId(product.getProductId().longValue());
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setPrice(product.getDiscountPrice());
+            orderItem.setOrder(order); // link to order
+
+            orderItems.add(orderItem);
+
+            totalPrice += product.getDiscountPrice() * item.getQuantity();
+            totalDiscount += (product.getActualPrice() - product.getDiscountPrice()) * item.getQuantity();
+        }
+
+        order.setItems(orderItems);
+        order.setTotalPrice(totalPrice);
+        order.setTotalDiscount(totalDiscount);
+
+        // 5. Save order (and cascade items)
+        orderRepo.save(order);
+
+        // 6. Clear cart
+        cart.getCartItems().clear();
+        cartRepo.save(cart);
+
+        // 7. Respond with success
+        return ResponseEntity.ok(Map.of(
+                "message", "Order placed successfully",
+                "orderId", order.getOrderId()
+        ));
+    }
+
+
+    // VIEW USER ORDERS
+
+    public List<OrderResponseDto> getOrdersByUser(Long userId) {
+        List<OrderModel> orders = orderRepo.findByUserId(userId);
+        List<OrderResponseDto> result = new ArrayList<>();
+
+        for (OrderModel order : orders) {
+            StoreRegistrationModel store = storeRegistrationRepo.findById(order.getStoreId())
+                    .orElseThrow(() -> new RuntimeException("Store not found"));
+
+            OrderResponseDto dto = new OrderResponseDto();
+            dto.setOrderId(order.getOrderId());
+            dto.setOrderDate(order.getOrderDate());
+            dto.setStoreName(store.getStoreName());
+            dto.setCustomerName(order.getCustomerName());
+            dto.setPhoneNumber(order.getPhoneNumber());
+            dto.setAddress(order.getAddress());
+            dto.setPaymentMethod(order.getPaymentMethod());
+            dto.setTotalPrice(order.getTotalPrice());
+            dto.setTotalDiscount(order.getTotalDiscount());
+
+            List<OrderItemDto> itemDtos = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                ProductModel product = productRepo.findById(item.getProductId().intValue())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                CategoryModel category = categoryRepo.findById(product.getCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Category not found"));
+
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setProductId(product.getProductId().longValue());
+                itemDto.setProductName(product.getProductName());
+                itemDto.setDescription(product.getProductDesc());
+                itemDto.setCategoryName(category.getCategoryName());
+                itemDto.setPrice(item.getPrice());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setImageBase64(convertImageToBase64(product.getProductImage()));
+
+                itemDtos.add(itemDto);
+            }
+
+            dto.setItems(itemDtos);
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+
+
+
+//    public void checkoutCart(Integer userId) {
+//        CartModel cart = cartRepo.findByUserId(Long.valueOf(userId))
+//                .orElseThrow(() -> new RuntimeException("Cart not found"));
+//
+//        if (cart.getCartItems().isEmpty()) {
+//            throw new RuntimeException("Cart is empty");
+//        }
+//
+//        OrderModel order = new OrderModel();
+//        order.setUserId(userId);
+//        order.setOrderDate(LocalDateTime.now());
+//
+//        List<OrderItem> items = new ArrayList<>();
+//        for (CartItem cartItem : cart.getCartItems()) {
+//            ProductModel product = productRepo.findById(cartItem.getProductId().intValue())
+//                    .orElseThrow(() -> new RuntimeException("Product not found"));
+//
+//            OrderItem item = new OrderItem();
+//            item.setProductId(product.getProductId());
+//            item.setStoreId(product.getStoreId().longValue());
+//            item.setQuantity(cartItem.getQuantity());
+//            item.setPrice(product.getDiscountPrice() * cartItem.getQuantity());
+//            item.setOrder(order);
+//
+//            items.add(item);
+//        }
+//
+//        order.setOrderItems(items);
+//        orderModelRepo.save(order);
+//
+//        cart.getCartItems().clear();
+//        cartRepo.save(cart);
+//    }
+//
+//
+//    @Autowired
+//    private OrderItemRepo orderItemRepo;
+//
+//    public List<OrderItem> getOrdersForStore(Integer storeId) {
+//        return orderItemRepo.findByStoreId(storeId.intValue());
+//    }
 
 
     // ADMIN
@@ -695,9 +995,22 @@ public class MedEService {
         return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
     }
 
+    public ResponseEntity<?> fetchPendingStores() {
+        List<StoreRegistrationModel> pendingStores = storeRegistrationRepo.findByStatusId(1);
+        return new ResponseEntity<>(pendingStores, HttpStatus.OK);
+    }
+
+    //ADMIN FETCH FEEDBACK
+    public ResponseEntity<?> fetchAllFeedback() {
+        List<FeedBackModel> feedbackList = feedBackRepo.findAll();
+        return new ResponseEntity<>(feedbackList, HttpStatus.OK);
+    }
 
 
-                                // STORE
+
+
+
+    // STORE
 
 
 
@@ -831,15 +1144,33 @@ public class MedEService {
 
     // STORE DELETE PRODUCT
 
-    public ResponseEntity<?> deleteProduct(Integer productId) {
-        Optional<ProductModel> productModelOptional = productRepo.findById(productId);
+//    public ResponseEntity<?> deleteProduct(Integer productId) {
+//        Optional<ProductModel> productModelOptional = productRepo.findById(productId);
+//
+//        if (productModelOptional.isPresent()){
+//            ProductModel product = productModelOptional.get();
+//            productRepo.delete(product);
+//            return new ResponseEntity<>("Product Deleted Successfully",HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("product not found", HttpStatus.NOT_FOUND);
+//    }
 
-        if (productModelOptional.isPresent()){
-            ProductModel product = productModelOptional.get();
-            productRepo.delete(product);
-            return new ResponseEntity<>("Product Deleted Successfully",HttpStatus.OK);
+    @Transactional
+    public void deleteProductById(Integer productId) {
+        // 1. Check if product exists
+        ProductModel product = productRepo.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+
+        // 2. Find all cart items referencing the product
+        List<CartItem> cartItems = cartItemRepo.findByProductId(productId.longValue());
+
+        // 3. Delete all those cart items
+        if (!cartItems.isEmpty()) {
+            cartItemRepo.deleteAll(cartItems);
         }
-        return new ResponseEntity<>("product not found", HttpStatus.NOT_FOUND);
+
+        // 4. Delete the product
+        productRepo.delete(product);
     }
 
     // STORE SEARCH PRODUCT
@@ -1093,6 +1424,51 @@ private SmsService smsService;  // To send SMS notifications
             return new ResponseEntity<>("Location Added successfully ",HttpStatus.OK);
         }
         return new ResponseEntity<>("location Adding Failed !",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    // STORE VIEW ORDERS
+
+    public List<OrderResponseDto> getOrdersByStore(Long storeId) {
+        List<OrderModel> orders = orderRepo.findByStoreId(storeId);
+        List<OrderResponseDto> result = new ArrayList<>();
+
+        for (OrderModel order : orders) {
+            OrderResponseDto dto = new OrderResponseDto();
+            dto.setOrderId(order.getOrderId());
+            dto.setOrderDate(order.getOrderDate());
+            dto.setStoreName(storeRegistrationRepo.findById(storeId.intValue()).map(StoreRegistrationModel::getStoreName).orElse("Unknown Store"));
+            dto.setCustomerName(order.getCustomerName());
+            dto.setPhoneNumber(order.getPhoneNumber());
+            dto.setAddress(order.getAddress());
+            dto.setPaymentMethod(order.getPaymentMethod());
+            dto.setTotalPrice(order.getTotalPrice());
+            dto.setTotalDiscount(order.getTotalDiscount());
+
+            List<OrderItemDto> itemDtos = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                ProductModel product = productRepo.findById(item.getProductId().intValue())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                CategoryModel category = categoryRepo.findById(product.getCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Category not found"));
+
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setProductId(product.getProductId().longValue());
+                itemDto.setProductName(product.getProductName());
+                itemDto.setDescription(product.getProductDesc());
+                itemDto.setCategoryName(category.getCategoryName());
+                itemDto.setPrice(item.getPrice());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setImageBase64(convertImageToBase64(product.getProductImage()));
+
+                itemDtos.add(itemDto);
+            }
+
+            dto.setItems(itemDtos);
+            result.add(dto);
+        }
+
+        return result;
     }
 
 

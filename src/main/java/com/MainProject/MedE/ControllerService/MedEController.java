@@ -5,10 +5,7 @@ import com.MainProject.MedE.Admin.AdminModel;
 import com.MainProject.MedE.Admin.AdminViewProductDTO;
 import com.MainProject.MedE.Store.*;
 
-import com.MainProject.MedE.UserRegistration.CartItemDTO;
-import com.MainProject.MedE.UserRegistration.PrescriptionModel;
-import com.MainProject.MedE.UserRegistration.UserLoginDto;
-import com.MainProject.MedE.UserRegistration.UserRegistrationModel;
+import com.MainProject.MedE.UserRegistration.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,6 +103,38 @@ public class MedEController {
     }
 
 
+    // USER FETCH PRESCRIPTION
+
+    @GetMapping("User/fetchPrescriptions")
+    public ResponseEntity<?> fetchPrescriptions(@RequestParam Long userId) {
+        try {
+            return medEService.fetchUserPrescriptions(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch prescriptions");
+        }
+    }
+
+    // USER DELETE PRESCRIPTION
+    @DeleteMapping("User/deletePrescription")
+    public ResponseEntity<?> deletePrescription(@RequestParam Long userId, @RequestParam Long prescriptionId) {
+        try {
+            String result = medEService.deletePrescriptionByUser(userId, prescriptionId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete prescription");
+        }
+    }
+
+    // USER FETCH PROFILE
+
+    @GetMapping(path = "User/profile")
+    public ResponseEntity<?> profile( @RequestParam Integer userId){
+        return medEService.fetchProfile(userId);
+    }
+
     // USER SEARCH PRODUCT
 
     @GetMapping(path = "User/searchProduct")
@@ -152,6 +181,12 @@ public class MedEController {
         }
     }
 
+    @GetMapping("User/cart")
+    public ResponseEntity<CartResponse> getUserCart(@RequestParam Long userId) {
+        return ResponseEntity.ok(medEService.getCartForUser(userId));
+    }
+
+
     // USER GET CART ITEMS
 
     @GetMapping("User/getCart")
@@ -183,6 +218,33 @@ public class MedEController {
         return  medEService.getProductDetails(productId,storeId);
     }
 
+    // USER CHECK OUT
+
+    @PostMapping("User/checkoutCart")
+    public ResponseEntity<?> checkoutCart(@RequestParam Long userId,
+                                          @RequestBody CheckoutRequestDto checkoutRequestDto) {
+        try {
+            return medEService.checkoutCart(userId, checkoutRequestDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong during checkout.");
+        }
+    }
+
+
+    // USER VIEW ORDERS
+
+    @GetMapping("User/orders")
+    public ResponseEntity<?> getUserOrders(@RequestParam Long userId) {
+        try {
+            List<OrderResponseDto> orders = medEService.getOrdersByUser(userId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch orders");
+        }
+    }
 
 
     // A D M I N
@@ -229,7 +291,6 @@ public class MedEController {
     }
 
     // ADMIN (STORE STATUS UPDATE)
-
 
     @PutMapping(path = "Admin/adminUpdateStoreStatus")
     public ResponseEntity<?>updateStoreStatusMethod(@RequestParam Integer store_id,@RequestParam Integer status_id){
@@ -332,7 +393,30 @@ public class MedEController {
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-                            // STORE
+    //ADMIN FETCH NEW STORE
+    @GetMapping(path = "Admin/fetchPendingStores")
+    public ResponseEntity<?> fetchPendingStores() {
+        try {
+            return medEService.fetchPendingStores();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //ADMIN FETCH FEEDBACK
+
+    @GetMapping(path = "Admin/fetchFeedback")
+    public ResponseEntity<?> fetchFeedback() {
+        try {
+            return medEService.fetchAllFeedback();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // STORE
 
 
 
@@ -416,15 +500,27 @@ public class MedEController {
     }
 
     //  STORE DELETE PRODUCT
-    @DeleteMapping(path = "Store/deleteProduct")
+//    @DeleteMapping(path = "Store/deleteProduct")
+//    public ResponseEntity<?>deleteProductMethod(@RequestParam Integer productId){
+//        try{
+//            return medEService.deleteProduct(productId);
+//        } catch ( Exception e ){
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>("delete failed ",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+        @DeleteMapping(path = "Store/deleteProduct")
     public ResponseEntity<?>deleteProductMethod(@RequestParam Integer productId){
         try{
-            return medEService.deleteProduct(productId);
+            medEService.deleteProductById(productId);
         } catch ( Exception e ){
             e.printStackTrace();
+            return new ResponseEntity<>("delete failed ",HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("delete failed ",HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+
+            return null;
+        }
 
     // STORE VIEW ALL PRODUCTS
 
@@ -599,6 +695,18 @@ public class MedEController {
             e.printStackTrace();
         }
         return new ResponseEntity<>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // STORE VIEW ORDERS
+    @GetMapping("Store/orders")
+    public ResponseEntity<?> getOrdersByStore(@RequestParam Long storeId) {
+        try {
+            List<OrderResponseDto> orders = medEService.getOrdersByStore(storeId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch store orders");
+        }
     }
 
 }
