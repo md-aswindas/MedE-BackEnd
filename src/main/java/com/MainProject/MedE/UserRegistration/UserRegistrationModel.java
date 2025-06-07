@@ -22,7 +22,7 @@ public class UserRegistrationModel {
     private String email;
 
     @Column(name = "phoneNumber")
-    private Integer phoneNumber;
+    private String phoneNumber;
 
     @Column(name="password")
     private String password;
@@ -60,11 +60,11 @@ public class UserRegistrationModel {
         this.password = password;
     }
 
-    public Integer getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(Integer phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 }

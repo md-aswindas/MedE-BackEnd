@@ -14,6 +14,7 @@ public class CheckoutRequestDto {
     private Long latitude;
     private Long longitude;
 
+
     public String getLocation() {
         return location;
     }

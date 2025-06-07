@@ -9,7 +9,7 @@ public class PrescriptionDTO {
     private String userName;
     private Integer userId;
     private String email;
-    private Integer phoneNumber;
+    private String phoneNumber;
     private Integer prescriptionId;
     private byte[] prescriptionImage;
 
@@ -45,11 +45,11 @@ public class PrescriptionDTO {
         this.email = email;
     }
 
-    public Integer getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(Integer phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 

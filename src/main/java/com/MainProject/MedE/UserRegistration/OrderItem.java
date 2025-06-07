@@ -2,6 +2,7 @@ package com.MainProject.MedE.UserRegistration;
 
 import com.MainProject.MedE.Store.StoreRegistrationModel;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,6 +18,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private OrderModel order;
 
     public Long getItemId() {

@@ -12,24 +12,54 @@ import java.util.List;
 public class OrderModel {
     @Id @GeneratedValue
     private Long orderId;
-
+    private Long status;
     private Long userId;
     private Integer storeId;
 
     private String customerName;
     private String phoneNumber;
     private String address;
+    private String location;
     private String paymentMethod;
 
     private double totalPrice;
     private double totalDiscount;
     private LocalDateTime orderDate;
+    private LocalDateTime dispatchDate;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
+    public LocalDateTime getDispatchDate() {
+        return dispatchDate;
+    }
+
+    public void setDispatchDate(LocalDateTime dispatchDate) {
+        this.dispatchDate = dispatchDate;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     public List<OrderItem> getItems() {
         return items;
+    }
+
+    public Long getStatus() {
+        return status;
+    }
+
+    public void setStatus(Long status) {
+        this.status = status;
+    }
+
+    public OrderModel() {
+        this.status = 1L;
     }
 
     public void setItems(List<OrderItem> items) {

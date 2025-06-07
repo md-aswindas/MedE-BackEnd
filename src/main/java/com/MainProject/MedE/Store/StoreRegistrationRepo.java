@@ -16,4 +16,6 @@ public interface StoreRegistrationRepo extends JpaRepository<StoreRegistrationMo
 
     @Query("SELECT s FROM StoreRegistrationModel s WHERE s.status_id = :statusId")
     List<StoreRegistrationModel> findByStatusId(@Param("statusId") Integer statusId);
+
+    Optional<StoreRegistrationModel> findByLicenseNumber(String licenseNumber);
 }

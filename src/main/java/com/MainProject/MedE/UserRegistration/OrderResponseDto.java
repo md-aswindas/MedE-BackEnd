@@ -6,6 +6,7 @@ import java.util.List;
 public class OrderResponseDto {
     private Long orderId;
     private LocalDateTime orderDate;
+    private LocalDateTime dispatchDtae;
     private String storeName;
     private String customerName;
     private String phoneNumber;
@@ -13,10 +14,27 @@ public class OrderResponseDto {
     private String paymentMethod;
     private double totalPrice;
     private double totalDiscount;
+    private String location;
     private List<OrderItemDto> items;
+
+    public LocalDateTime getDispatchDtae() {
+        return dispatchDtae;
+    }
+
+    public void setDispatchDtae(LocalDateTime dispatchDtae) {
+        this.dispatchDtae = dispatchDtae;
+    }
 
     public Long getOrderId() {
         return orderId;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public void setOrderId(Long orderId) {

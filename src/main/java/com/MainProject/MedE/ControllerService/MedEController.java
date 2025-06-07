@@ -81,7 +81,7 @@ public class MedEController {
     // UPDATE EMAIL **MODIFY TO DISPLAY EMAIL**
 
     @PutMapping(path = "User/updateEmail")
-    public ResponseEntity<?> updateEmailMethod(@RequestParam Integer phoneNumber, @RequestParam String email){
+    public ResponseEntity<?> updateEmailMethod(@RequestParam String phoneNumber, @RequestParam String email){
         try{
             return medEService.updateEmail(phoneNumber,email);
         } catch (Exception e) {
@@ -636,7 +636,7 @@ public class MedEController {
     public ResponseEntity<?>updateProfile(@RequestParam Integer store_id,
                                           @RequestParam String store_name,
                                           @RequestParam String password,
-                                          @RequestParam Long phone_number){
+                                          @RequestParam String phone_number){
         return medEService.updateProfile(store_id,store_name,password,phone_number);
     }
 
@@ -720,5 +720,34 @@ public class MedEController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch store orders");
         }
     }
+
+    // STORE UPDATE STATUS
+    @PutMapping(path = "Store/updateStatus")
+    public ResponseEntity<?> updateOrderStatus(@RequestParam Long orderId,
+                                               @RequestParam Long status) {
+        try {
+            return medEService.updateOrderStatus(orderId, status);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Status Update Failed!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // STORE GET ORDER WITH STATUS 2
+
+    @GetMapping(path = "Store/getByStatus")
+    public ResponseEntity<?> getOrdersByStoreAndStatus(@RequestParam Long storeId,
+                                               @RequestParam Long status) {
+        try {
+            List<OrderResponseDto> orders = medEService.getOrdersByStoreAndStatus(storeId,status);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to fetch orders", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
 
 }

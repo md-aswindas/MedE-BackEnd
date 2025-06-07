@@ -33,15 +33,29 @@ public class MedEService {
     // USER REGISTRATION
 
     public ResponseEntity<?> userRegistration(UserRegistrationModel userRegistrationModel) {
-        UserRegistrationModel userRegistrationModel1 = new UserRegistrationModel();
-        userRegistrationModel1.setName(userRegistrationModel.getName());
-        userRegistrationModel1.setPassword(userRegistrationModel.getPassword());
-        userRegistrationModel1.setEmail(userRegistrationModel.getEmail());
-        userRegistrationModel1.setPhoneNumber(userRegistrationModel.getPhoneNumber());
-        userRegistrationRepo.save(userRegistrationModel1);
+        // Check if email already exists
+        Optional<UserRegistrationModel> existingByEmail = userRegistrationRepo.findByEmail(userRegistrationModel.getEmail());
+        if (existingByEmail.isPresent()) {
+            return new ResponseEntity<>("Email already registered", HttpStatus.CONFLICT);
+        }
 
-        return new ResponseEntity<>(userRegistrationModel1, HttpStatus.OK);
+        // Check if phone number already exists
+        Optional<UserRegistrationModel> existingByPhone = userRegistrationRepo.findByPhoneNumber(userRegistrationModel.getPhoneNumber());
+        if (existingByPhone.isPresent()) {
+            return new ResponseEntity<>("Phone number already registered", HttpStatus.CONFLICT);
+        }
+
+        // Proceed with registration
+        UserRegistrationModel newUser = new UserRegistrationModel();
+        newUser.setName(userRegistrationModel.getName());
+        newUser.setPassword(userRegistrationModel.getPassword());
+        newUser.setEmail(userRegistrationModel.getEmail());
+        newUser.setPhoneNumber(userRegistrationModel.getPhoneNumber());
+
+        userRegistrationRepo.save(newUser);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
+
 
     // USER LOGIN
 
@@ -84,7 +98,7 @@ public class MedEService {
 
     //UPDATE EMAIL
 
-    public ResponseEntity<?> updateEmail(Integer phoneNumber, String email) {
+    public ResponseEntity<?> updateEmail(String phoneNumber, String email) {
         Optional<UserRegistrationModel>optionalUserRegistrationModel=userRegistrationRepo.findByPhoneNumber(phoneNumber);
         if (optionalUserRegistrationModel.isPresent()){
             UserRegistrationModel userRegistrationModel = optionalUserRegistrationModel.get();
@@ -574,6 +588,8 @@ public class MedEService {
         order.setAddress(checkoutRequest.getAddress());
         order.setPaymentMethod(checkoutRequest.getPaymentMethod());
         order.setOrderDate(LocalDateTime.now());
+        order.setLocation(checkoutRequest.getLocation());
+
 
         double totalPrice = 0;
         double totalDiscount = 0;
@@ -635,6 +651,7 @@ public class MedEService {
             dto.setPaymentMethod(order.getPaymentMethod());
             dto.setTotalPrice(order.getTotalPrice());
             dto.setTotalDiscount(order.getTotalDiscount());
+            dto.setLocation(order.getLocation());
 
             List<OrderItemDto> itemDtos = new ArrayList<>();
             for (OrderItem item : order.getItems()) {
@@ -1058,22 +1075,45 @@ public class MedEService {
     // STORE REGISTRATION
 
 
+//    public ResponseEntity<?> storeRegistration(StoreRegistrationModel storeRegistrationModel, MultipartFile licenseImage) throws IOException {
+//        StoreRegistrationModel storeRegistrationModel1 = new StoreRegistrationModel();
+//        storeRegistrationModel1.setStoreName(storeRegistrationModel.getStoreName());
+//        storeRegistrationModel1.setLicenseNumber(storeRegistrationModel.getLicenseNumber());
+//        storeRegistrationModel1.setPhone_number(storeRegistrationModel.getPhone_number());
+//
+//        storeRegistrationModel1.setPassword(storeRegistrationModel.getPassword());
+//        storeRegistrationModel1.setCreated_at(LocalDate.now());
+//        // file upload(multipart)
+//        storeRegistrationModel1.setLicense_image(licenseImage.getBytes());
+//
+//        storeRegistrationRepo.save(storeRegistrationModel1);
+//        return new ResponseEntity<>(storeRegistrationModel1,HttpStatus.OK);
+//
+//
+//    }
+
     public ResponseEntity<?> storeRegistration(StoreRegistrationModel storeRegistrationModel, MultipartFile licenseImage) throws IOException {
+        // Check for existing license number
+        Optional<StoreRegistrationModel> existingStore = storeRegistrationRepo.findByLicenseNumber(storeRegistrationModel.getLicenseNumber());
+        if (existingStore.isPresent()) {
+            return new ResponseEntity<>("❌ License number already registered", HttpStatus.CONFLICT);
+        }
+
+        // Proceed to register
         StoreRegistrationModel storeRegistrationModel1 = new StoreRegistrationModel();
         storeRegistrationModel1.setStoreName(storeRegistrationModel.getStoreName());
         storeRegistrationModel1.setLicenseNumber(storeRegistrationModel.getLicenseNumber());
         storeRegistrationModel1.setPhone_number(storeRegistrationModel.getPhone_number());
-
         storeRegistrationModel1.setPassword(storeRegistrationModel.getPassword());
         storeRegistrationModel1.setCreated_at(LocalDate.now());
-        // file upload(multipart)
+
+        // Handle file upload
         storeRegistrationModel1.setLicense_image(licenseImage.getBytes());
 
         storeRegistrationRepo.save(storeRegistrationModel1);
-        return new ResponseEntity<>(storeRegistrationModel1,HttpStatus.OK);
-
-
+        return new ResponseEntity<>(storeRegistrationModel1, HttpStatus.OK);
     }
+
 
     // STORE LOGIN
 
@@ -1337,7 +1377,7 @@ public class MedEService {
 
     // STORE UPDATE PROFILE
 
-    public ResponseEntity<?> updateProfile(Integer storeId, String storeName, String password, Long phoneNumber) {
+    public ResponseEntity<?> updateProfile(Integer storeId, String storeName, String password, String phoneNumber) {
         Optional<StoreRegistrationModel>storeRegistrationModelOptional=storeRegistrationRepo.findById(storeId);
         if (storeRegistrationModelOptional.isPresent()){
             StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
@@ -1495,6 +1535,75 @@ private SmsService smsService;  // To send SMS notifications
         return result;
     }
 
+
+    public ResponseEntity<?> updateOrderStatus(Long orderId, Long status) {
+        Optional<OrderModel> optionalOrder = orderRepo.findById(orderId);
+
+        if (optionalOrder.isPresent()) {
+            OrderModel order = optionalOrder.get();
+            order.setStatus(status);
+            order.setDispatchDate(LocalDateTime.now());
+            orderRepo.save(order);
+            return new ResponseEntity<>("Order status updated successfully!", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Order not found!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+//    public ResponseEntity<?> getOrdersByStatus(Long status) {
+//        List<OrderModel> orders = orderRepo.findByStatus(status);
+//        if (orders.isEmpty()) {
+//            return new ResponseEntity<>("No orders found with status: " + status, HttpStatus.NOT_FOUND);
+//        }
+//        return new ResponseEntity<>(orders, HttpStatus.OK);
+//    }
+
+    public List<OrderResponseDto> getOrdersByStoreAndStatus(Long storeId, Long status) {
+        List<OrderModel> orders = orderRepo.findByStoreIdAndStatus(storeId.intValue(), status);
+        List<OrderResponseDto> result = new ArrayList<>();
+
+        for (OrderModel order : orders) {
+            OrderResponseDto dto = new OrderResponseDto();
+            dto.setOrderId(order.getOrderId());
+            dto.setOrderDate(order.getOrderDate());
+            dto.setDispatchDtae(order.getDispatchDate());
+            dto.setStoreName(storeRegistrationRepo.findById(storeId.intValue())
+                    .map(StoreRegistrationModel::getStoreName)
+                    .orElse("Unknown Store"));
+            dto.setCustomerName(order.getCustomerName());
+            dto.setPhoneNumber(order.getPhoneNumber());
+            dto.setAddress(order.getAddress());
+            dto.setLocation(order.getLocation());
+            dto.setPaymentMethod(order.getPaymentMethod());
+            dto.setTotalPrice(order.getTotalPrice());
+            dto.setTotalDiscount(order.getTotalDiscount());
+
+            List<OrderItemDto> itemDtos = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                ProductModel product = productRepo.findById(item.getProductId().intValue())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                CategoryModel category = categoryRepo.findById(product.getCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Category not found"));
+
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setProductId(product.getProductId().longValue());
+                itemDto.setProductName(product.getProductName());
+                itemDto.setDescription(product.getProductDesc());
+                itemDto.setCategoryName(category.getCategoryName());
+                itemDto.setPrice(item.getPrice());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setImageBase64(convertImageToBase64(product.getProductImage()));
+
+                itemDtos.add(itemDto);
+            }
+
+            dto.setItems(itemDtos);
+            result.add(dto);
+        }
+
+        return result;
+    }
 
 
 }

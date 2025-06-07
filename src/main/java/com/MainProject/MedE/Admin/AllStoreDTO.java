@@ -15,7 +15,7 @@ public class AllStoreDTO {
         private Double latitude;
         private Double longitude;
         private String licenseNumber;
-        private Long phoneNumber;
+        private String phoneNumber;
         private Double averageRating;
         private LocalDate created;
 
@@ -35,15 +35,15 @@ public class AllStoreDTO {
             this.averageRating = averageRating;
         }
 
-        public Long getPhoneNumber() {
-            return phoneNumber;
-        }
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
-        public void setPhoneNumber(Long phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
-        public String getLicenseNumber() {
+    public String getLicenseNumber() {
             return licenseNumber;
         }
 

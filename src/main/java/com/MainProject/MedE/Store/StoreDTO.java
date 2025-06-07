@@ -28,7 +28,7 @@ public class StoreDTO {
 
     private LocalDate statusUpdateDate;
 
-    private Long phoneNumber;
+    private String phoneNumber;
 
     private String address;
 
@@ -40,11 +40,11 @@ public class StoreDTO {
         this.address = address;
     }
 
-    public Long getPhoneNumber(Long phoneNumber) {
-        return this.phoneNumber;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhoneNumber(Long phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -52,9 +52,7 @@ public class StoreDTO {
         return storePassword;
     }
 
-    public Long getPhoneNumber() {
-        return phoneNumber;
-    }
+
 
     public Integer getStoreId() {
         return storeId;

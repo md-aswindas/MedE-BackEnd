@@ -13,7 +13,7 @@ public interface UserRegistrationRepo extends JpaRepository<UserRegistrationMode
     Optional<UserRegistrationModel> findByEmail(String email);
 
 
-    Optional<UserRegistrationModel> findByPhoneNumber(Integer phoneNumber);
+    Optional<UserRegistrationModel> findByPhoneNumber(String phoneNumber);
 
     @Query("SELECT p FROM UserRegistrationModel p WHERE p.user_id = :userId")
     Optional<UserRegistrationModel> findByUserId(@Param("userId")Integer userId);
