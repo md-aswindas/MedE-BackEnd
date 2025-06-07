@@ -78,7 +78,7 @@ public class MedEController {
         return new ResponseEntity<>("Something went Wrong !",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // UPDATE EMAIL **MODIFY TO DISPLAY EMAIL**
+    // UPDATE EMAIL **MODIFY TO DISPLAY EMAIL*
 
     @PutMapping(path = "User/updateEmail")
     public ResponseEntity<?> updateEmailMethod(@RequestParam String phoneNumber, @RequestParam String email){
