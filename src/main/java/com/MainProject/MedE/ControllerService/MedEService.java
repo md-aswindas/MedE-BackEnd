@@ -806,6 +806,7 @@ public class MedEService {
         if (storeRegistrationModelOptional.isPresent()){
             StoreRegistrationModel storeRegistrationModel = storeRegistrationModelOptional.get();
             storeRegistrationModel.setStatus_id(status_id);
+            storeRegistrationModel.setStatusUpdate_at(LocalDate.now());
             storeRegistrationRepo.save(storeRegistrationModel);
             return new ResponseEntity<>(storeRegistrationModel,HttpStatus.OK);
         }else{
@@ -1015,10 +1016,10 @@ public class MedEService {
     }
 
     //ADMIN FETCH FEEDBACK
-    public ResponseEntity<?> fetchAllFeedback() {
-        List<FeedBackModel> feedbackList = feedBackRepo.findAll();
-        return new ResponseEntity<>(feedbackList, HttpStatus.OK);
-    }
+//    public ResponseEntity<?> fetchAllFeedback() {
+//        List<FeedBackModel> feedbackList = feedBackRepo.findAll();
+//        return new ResponseEntity<>(feedbackList, HttpStatus.OK);
+//    }
 
     public ResponseEntity<?> findTopStores() {
         List<StoreRegistrationModel> allStores = storeRegistrationRepo.findAll();
@@ -1048,6 +1049,92 @@ public class MedEService {
         return new ResponseEntity<>(allStoreDTOList,HttpStatus.OK);
     }
 
+    // admin get all orders
+
+    public List<OrderResponseDto> getAllOrders() {
+        List<OrderModel> orders = orderRepo.findAll();
+        List<OrderResponseDto> result = new ArrayList<>();
+
+        for (OrderModel order : orders) {
+            OrderResponseDto dto = new OrderResponseDto();
+            dto.setOrderId(order.getOrderId());
+            dto.setOrderDate(order.getOrderDate());
+            dto.setDispatchDtae(order.getDispatchDate());
+
+            // Fetch store name based on order's store ID
+            dto.setStoreName(storeRegistrationRepo.findById(order.getStoreId())
+                    .map(StoreRegistrationModel::getStoreName)
+                    .orElse("Unknown Store"));
+
+            dto.setCustomerName(order.getCustomerName());
+            dto.setPhoneNumber(order.getPhoneNumber());
+            dto.setAddress(order.getAddress());
+            dto.setLocation(order.getLocation());
+            dto.setPaymentMethod(order.getPaymentMethod());
+            dto.setTotalPrice(order.getTotalPrice());
+            dto.setTotalDiscount(order.getTotalDiscount());
+
+            // Add product details
+            List<OrderItemDto> itemDtos = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                ProductModel product = productRepo.findById(item.getProductId().intValue())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                CategoryModel category = categoryRepo.findById(product.getCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Category not found"));
+
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setProductId(product.getProductId().longValue());
+                itemDto.setProductName(product.getProductName());
+                itemDto.setDescription(product.getProductDesc());
+                itemDto.setCategoryName(category.getCategoryName());
+                itemDto.setPrice(item.getPrice());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setImageBase64(convertImageToBase64(product.getProductImage()));
+
+                itemDtos.add(itemDto);
+            }
+
+            dto.setItems(itemDtos);
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+
+    public ResponseEntity<?> fetchAllFeedbacks() {
+        List<FeedBackModel> feedbackList = feedBackRepo.findAll();
+
+        if (feedbackList.isEmpty()) {
+            return new ResponseEntity<>("No feedback found", HttpStatus.NOT_FOUND);
+        }
+
+        List<FeedbackResponseDto> result = new ArrayList<>();
+
+        for (FeedBackModel feedback : feedbackList) {
+            FeedbackResponseDto dto = new FeedbackResponseDto();
+            dto.setFeedbackId(feedback.getFeedbackId());
+            dto.setComment(feedback.getComment());
+            dto.setRating(feedback.getRating());
+
+            // Get user name
+            String userName = userRegistrationRepo.findById(feedback.getUser_id())
+                    .map(UserRegistrationModel::getName)  // adjust field name if different
+                    .orElse("Unknown User");
+
+            // Get store name
+            String storeName = storeRegistrationRepo.findById(feedback.getStore_id())
+                    .map(StoreRegistrationModel::getStoreName)
+                    .orElse("Unknown Store");
+
+            dto.setUserName(userName);
+            dto.setStoreName(storeName);
+
+            result.add(dto);
+        }
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
 
 

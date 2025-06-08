@@ -406,15 +406,15 @@ public class MedEController {
 
     //ADMIN FETCH FEEDBACK
 
-    @GetMapping(path = "Admin/fetchFeedback")
-    public ResponseEntity<?> fetchFeedback() {
-        try {
-            return medEService.fetchAllFeedback();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @GetMapping(path = "Admin/fetchFeedback")
+//    public ResponseEntity<?> fetchFeedback() {
+//        try {
+//            return medEService.fetchAllFeedback();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     //STORE FULL DETAIL
 
@@ -428,7 +428,18 @@ public class MedEController {
         }
     }
 
-    // STORE
+    @GetMapping("Admin/all-orders")
+    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
+        return ResponseEntity.ok(medEService.getAllOrders());
+    }
+
+    @GetMapping("Admin/fetchFeedback")
+    public ResponseEntity<?> fetchAllFeedbacks() {
+        return medEService.fetchAllFeedbacks();
+    }
+
+
+                                                // STORE
 
 
 
