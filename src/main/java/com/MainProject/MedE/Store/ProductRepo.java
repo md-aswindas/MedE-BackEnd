@@ -30,4 +30,16 @@ public interface ProductRepo extends JpaRepository<ProductModel,Integer> {
     List<ProductModel> findByStoreIdOrderByDiscountPriceDesc(Integer storeId);
 
     List<ProductModel> findByStoreIdOrderByDiscountPriceAsc(Integer storeId);
+
+    List<ProductModel> findAllByStoreIdAndStockGreaterThan(Integer storeId, int i);
+
+    List<ProductModel> findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceAsc(Integer storeId, int i);
+
+    List<ProductModel> findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceDesc(Integer storeId, int i);
+
+    List<ProductModel> findAllByStoreIdAndCategoryIdAndStockGreaterThanOrderByDiscountPriceDesc(Integer storeId, Integer categoryId, int i);
+
+    List<ProductModel> findAllByStoreIdAndCategoryIdAndStockGreaterThan(Integer storeId, Integer categoryId, int i);
+
+    List<ProductModel> findAllByStoreIdAndCategoryIdAndStockGreaterThanOrderByDiscountPriceAsc(Integer storeId, Integer categoryId, int i);
 }

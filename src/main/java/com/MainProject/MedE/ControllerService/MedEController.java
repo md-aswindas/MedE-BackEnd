@@ -332,6 +332,44 @@ public class MedEController {
         return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+//    @GetMapping(path = "User/UserViewStoreProducts")
+//    public ResponseEntity<?>ViewStoreProductsMethod(@RequestParam Integer storeId, @RequestParam(required = false) String sort){
+//        try {
+//            if ("asc".equalsIgnoreCase(sort)) {
+//                return medEService.ProductsSortedAsc(storeId); // ✅ Return result
+//            } else if ("desc".equalsIgnoreCase(sort)) {
+//                return medEService.ProductsSortedDesc(storeId); // ✅ Return result
+//            } else {
+//                return medEService.ViewStoreProduct(storeId); // ✅ Return result
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>("something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+    @GetMapping(path = "User/UserViewStoreProducts")
+    public ResponseEntity<?> ViewStoreProductsMethod(
+            @RequestParam Integer storeId,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer categoryId) {
+        System.out.println("storeId: " + storeId + ", categoryId: " + categoryId + ", sort: " + sort);
+
+        try {
+            if ("asc".equalsIgnoreCase(sort)) {
+                return medEService.ProductsSortedAsc(storeId, categoryId);
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                return medEService.ProductsSortedDesc(storeId, categoryId);
+            } else {
+                return medEService.ViewStoreProduct(storeId, categoryId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     // ADMIN ( VIEW PRODUCTS OF ALL STORES WITH STORE NAME )
 
     @GetMapping(path = "Admin/adminViewAllProduct")
@@ -438,8 +476,33 @@ public class MedEController {
         return medEService.fetchAllFeedbacks();
     }
 
+    @GetMapping(path = "Admin/fetchAllUsers")
+    public ResponseEntity<?> adminFetchUsers() {
+        try {
+            return medEService.adminFetchUsers();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-                                                // STORE
+
+
+    @GetMapping("Admin/fetchAllPrescriptions")
+    public ResponseEntity<?> fetchAllPrescriptions() {
+        try {
+            return medEService.fetchAllPrescriptions();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch prescriptions");
+        }
+    }
+
+
+
+
+    // STORE
 
 
 

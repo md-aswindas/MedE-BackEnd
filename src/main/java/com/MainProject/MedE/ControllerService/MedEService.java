@@ -600,6 +600,16 @@ public class MedEService {
             ProductModel product = productRepo.findById(item.getProductId().intValue())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
+            // Optional: Check stock availability
+            if (product.getStock() < item.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product: " + product.getProductName());
+            }
+
+            // Reduce stock count
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepo.save(product); // Save updated product stock
+
+
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(product.getProductId().longValue());
             orderItem.setQuantity(item.getQuantity());
@@ -882,6 +892,77 @@ public class MedEService {
         return new ResponseEntity<>(adminViewProductDTOList,HttpStatus.NOT_FOUND);
     }
 
+//------------------------------------------------------------------------------------------------------------------------
+
+    // Ascending order by actual price
+//    public ResponseEntity<?> ProductsSortedAsc(Integer storeId) {
+//        List<ProductModel> sortedList = productRepo.findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceAsc(storeId,5);
+//        if (!sortedList.isEmpty()) {
+//            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+//    }
+
+    // Descending order by actual price
+//    public ResponseEntity<?> ProductsSortedDesc(Integer storeId) {
+//        List<ProductModel> sortedList = productRepo.findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceDesc(storeId,5);
+//        if (!sortedList.isEmpty()) {
+//            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+//    }
+
+//    public ResponseEntity<?> ViewStoreProduct(Integer storeId) {
+//        List<ProductModel> productModelList=productRepo.findAllByStoreIdAndStockGreaterThan(storeId,5);
+//        if (!productModelList.isEmpty()){
+//            return new ResponseEntity<>(productModelList,HttpStatus.OK);
+//        }
+//        return new ResponseEntity<>("Id Not Found",HttpStatus.NOT_FOUND);
+//    }
+
+    public ResponseEntity<?> ProductsSortedAsc(Integer storeId, Integer categoryId) {
+        List<ProductModel> sortedList;
+        if (categoryId != null) {
+            sortedList = productRepo.findAllByStoreIdAndCategoryIdAndStockGreaterThanOrderByDiscountPriceAsc(storeId, categoryId, 5);
+        } else {
+            sortedList = productRepo.findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceAsc(storeId, 5);
+        }
+
+        if (!sortedList.isEmpty()) {
+            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> ProductsSortedDesc(Integer storeId, Integer categoryId) {
+        List<ProductModel> sortedList;
+        if (categoryId != null) {
+            sortedList = productRepo.findAllByStoreIdAndCategoryIdAndStockGreaterThanOrderByDiscountPriceDesc(storeId, categoryId, 5);
+        } else {
+            sortedList = productRepo.findAllByStoreIdAndStockGreaterThanOrderByDiscountPriceDesc(storeId, 5);
+        }
+
+        if (!sortedList.isEmpty()) {
+            return new ResponseEntity<>(sortedList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No products found for sorting", HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> ViewStoreProduct(Integer storeId, Integer categoryId) {
+        List<ProductModel> productModelList;
+        if (categoryId != null) {
+            productModelList = productRepo.findAllByStoreIdAndCategoryIdAndStockGreaterThan(storeId, categoryId, 5);
+        } else {
+            productModelList = productRepo.findAllByStoreIdAndStockGreaterThan(storeId, 5);
+        }
+
+        if (!productModelList.isEmpty()) {
+            return new ResponseEntity<>(productModelList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Id Not Found", HttpStatus.NOT_FOUND);
+    }
+
+
     // VIEW STORE PRODUCT
 
 //    public ResponseEntity<List<AdminViewProductDTO>> adminViewStoreProductsWithName(Integer storeId) {
@@ -994,11 +1075,20 @@ public class MedEService {
     // ADMIN ADD CATEGORY
 
     public ResponseEntity<?> addCategory(CategoryModel categoryModel) {
-        CategoryModel categoryModel1 = new CategoryModel();
-        categoryModel1.setCategoryName(categoryModel.getCategoryName());
-        categoryRepo.save(categoryModel1);
-        return new ResponseEntity<>("Category Added Successfully",HttpStatus.CREATED);
+        // Check if category already exists (case-insensitive)
+        Optional<CategoryModel> existingCategory = categoryRepo.findByCategoryNameIgnoreCase(categoryModel.getCategoryName());
+
+        if (existingCategory.isPresent()) {
+            return new ResponseEntity<>("Category already exists", HttpStatus.CONFLICT);
+        }
+
+        CategoryModel newCategory = new CategoryModel();
+        newCategory.setCategoryName(categoryModel.getCategoryName());
+        categoryRepo.save(newCategory);
+
+        return new ResponseEntity<>("Category added successfully", HttpStatus.CREATED);
     }
+
 
     // ADMIN FETCH ALL ADS
 
@@ -1135,6 +1225,57 @@ public class MedEService {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
+    public ResponseEntity<?> adminFetchUsers() {
+        List<UserRegistrationModel> userList = userRegistrationRepo.findAll();
+        if (!userList.isEmpty()) {
+            return new ResponseEntity<>(userList, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("No users found", HttpStatus.NOT_FOUND);
+    }
+
+    //Admin fetch prescription
+
+    public ResponseEntity<?> fetchAllPrescriptions() {
+        List<PrescriptionModel> prescriptions = prescriptionRepo.findAll();
+        List<PrescriptionDTO> dtoList = new ArrayList<>();
+
+        for (PrescriptionModel prescription : prescriptions) {
+            PrescriptionDTO dto = new PrescriptionDTO();
+            dto.setPrescriptionId(prescription.getPrescriptionId());
+            dto.setPrescriptionImage(prescription.getPrescriptionImage());
+
+            // Get user details manually
+            Optional<UserRegistrationModel> userOpt = userRegistrationRepo.findById(prescription.getUser_id());
+            if (userOpt.isPresent()) {
+                UserRegistrationModel user = userOpt.get();
+                dto.setUserId(user.getUser_id());
+                dto.setUserName(user.getName());
+                dto.setEmail(user.getEmail());
+                dto.setPhoneNumber(user.getPhoneNumber());
+            } else {
+                dto.setUserId(prescription.getUser_id());
+                dto.setUserName("Unknown");
+            }
+
+            // Get store details manually
+            Optional<StoreRegistrationModel> storeOpt = storeRegistrationRepo.findById(prescription.getStoreId());
+            if (storeOpt.isPresent()) {
+                StoreRegistrationModel store = storeOpt.get();
+                dto.setStoreId(store.getStore_id());
+                dto.setStoreName(store.getStoreName());
+            } else {
+                dto.setStoreId(prescription.getStoreId());
+                dto.setStoreName("Unknown");
+            }
+
+            dtoList.add(dto);
+        }
+
+        return ResponseEntity.ok(dtoList);
+    }
+
 
 
 

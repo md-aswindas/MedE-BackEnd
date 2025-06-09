@@ -8,10 +8,28 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 public class PrescriptionDTO {
     private String userName;
     private Integer userId;
+    private Integer storeId;
+    private String storeName;
     private String email;
     private String phoneNumber;
     private Integer prescriptionId;
     private byte[] prescriptionImage;
+
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Integer storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getStoreName() {
+        return storeName;
+    }
+
+    public void setStoreName(String storeName) {
+        this.storeName = storeName;
+    }
 
     public String getUserName() {
         return userName;
